@@ -3,6 +3,7 @@
 ## Creating state
 
 ```jsx
+import React from 'react';
 import {createState, useSharedState} from 'react-sharestate';
 
 const counterState = createState(0);
@@ -18,6 +19,7 @@ function Counter() {
 ## Creating selectors
 
 ```jsx
+import React from 'react';
 import {
   createState,
   createSelector,
@@ -44,6 +46,7 @@ function Counter() {
 ## Deriving state
 
 ```jsx
+import React from 'react';
 import {createState, deriveState, useSharedState} from 'react-sharestate';
 
 const counterState = createState(0);
@@ -70,6 +73,7 @@ function Counter() {
 ## Creating state maps
 
 ```jsx
+import React from 'react';
 import {createStateMap, useSharedSelector} from 'react-sharestate';
 
 const mouseState = createStateMap({x: 0, y: 0});
@@ -94,6 +98,7 @@ function MouseCoordinates() {
 ## Creating state factories
 
 ```jsx
+import React from 'react';
 import {createState, stateFactory, useSharedSelector} from 'react-sharestate';
 
 const itemStateFactory = stateFactory(key => createState(`Item ${key}`));
@@ -108,8 +113,10 @@ function Item(props) {
 ## Defaulting state asynchronously
 
 ```jsx
+import React from 'react';
 import {createState, useSharedState} from 'react-sharestate';
 import {useAsync} from 'react-use';
+import delay from 'delay';
 
 const counterState = createState(() => delay(100).then(() => 0));
 
@@ -125,6 +132,7 @@ function Counter() {
 ## Selecting asynchronously
 
 ```jsx
+import React from 'react';
 import {
   createState,
   createSelector,
@@ -132,6 +140,7 @@ import {
   useSharedSelector,
 } from 'react-sharestate';
 import {useAsync} from 'react-use';
+import delay from 'delay';
 
 const counterState = createState(0);
 const counterDoubleSelector = createSelector(({get}) =>
