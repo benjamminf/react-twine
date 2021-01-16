@@ -94,9 +94,9 @@ function MouseCoordinates() {
 ## Creating state factories
 
 ```jsx
-import {createState, memo, useSharedSelector} from 'react-sharestate';
+import {createState, stateFactory, useSharedSelector} from 'react-sharestate';
 
-const itemStateFactory = memo(key => createState(`Item ${key}`));
+const itemStateFactory = stateFactory(key => createState(`Item ${key}`));
 
 function Item(props) {
   const item = useSharedSelector(itemStateFactory(props.itemKey));
@@ -108,27 +108,47 @@ function Item(props) {
 ## Defaulting state asynchronously
 
 ```jsx
-import {createState, memo} from 'react-sharestate';
+import {createState, useSharedState} from 'react-sharestate';
+import {useAsync} from 'react-use';
 
-const asyncState = memo(() => {
-  const state = createState('loading');
-  const timeout = setTimeout(() => state.set('loaded'), 1000);
+const counterState = createState(() => delay(100).then(() => 0));
 
-  state.observe(() => clearTimeout(timeout));
+function Counter() {
+  const [countPromise, setCounterPromise] = useSharedState(counterState);
+  const count = useAsync(() => countPromise, [countPromise]);
+  const increment = () => setCounterPromise(Promise.resolve(count + 1));
 
-  return state;
-});
+  return <button onClick={increment}>{count.value ?? 'loading...'}</button>;
+}
 ```
 
 ## Selecting asynchronously
 
 ```jsx
-import {createState, createSelector, memo} from 'react-sharestate';
+import {
+  createState,
+  createSelector,
+  useSharedState,
+  useSharedSelector,
+} from 'react-sharestate';
+import {useAsync} from 'react-use';
 
 const counterState = createState(0);
-const counterDoubleState = createState(0);
+const counterDoubleSelector = createSelector(({get}) =>
+  delay(100).then(() => get(counterState) * 2)
+);
 
-counterState.observe(count => {
-  setTimeout(() => counterDoubleState.set(count * 2), 1000);
-});
+function Counter() {
+  const [count, setCounter] = useSharedState(counterState);
+  const countDoublePromise = useSharedSelector(counterDoubleSelector);
+  const countDouble = useAsync(() => countDoublePromise, [countDoublePromise]);
+  const increment = () => setCounter(count + 1);
+
+  return (
+    <p>
+      <button onClick={increment}>{count}</button> * 2 =
+      {countDouble.value ?? 'loading...'}
+    </p>
+  );
+}
 ```
