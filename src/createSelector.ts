@@ -43,5 +43,3 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     observe: proxyState.observe,
   };
 }
-
-createState(async () => await (await fetch('https://...')).json());
