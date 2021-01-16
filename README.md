@@ -139,24 +139,25 @@ import {
   useSharedState,
   useSharedSelector,
 } from 'react-sharestate';
-import {useAsync} from 'react-use';
+import usePromise from 'react-use-promise';
 import delay from 'delay';
 
 const counterState = createState(0);
-const counterDoubleSelector = createSelector(({get}) =>
-  delay(100).then(() => get(counterState) * 2)
-);
+const counterDoubleSelector = createSelector(async ({get}) => {
+  const counter = get(counterState);
+  await delay(2000);
+  return counter * 2;
+});
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
-  const countDoublePromise = useSharedSelector(counterDoubleSelector);
-  const countDouble = useAsync(() => countDoublePromise, [countDoublePromise]);
+  const [countDouble] = usePromise(useSharedSelector(counterDoubleSelector));
   const increment = () => setCounter(count + 1);
 
   return (
     <p>
       <button onClick={increment}>{count}</button> * 2 =
-      {countDouble.value ?? 'loading...'}
+      {countDouble ?? 'loading...'}
     </p>
   );
 }

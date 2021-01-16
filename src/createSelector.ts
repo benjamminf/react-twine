@@ -17,23 +17,22 @@ export type Selector<T> = {
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
   const defaultValue = getter({get: state => state.get()});
   const proxyState = createState<T>(defaultValue);
+  const dependentState = new Set<State<any>>();
   const observedState = new Set<Unobserve>();
 
+  function getProxy<V>(state: State<V>): V {
+    if (!dependentState.has(state)) {
+      dependentState.add(state);
+      observedState.add(state.observe(deriver));
+    }
+    return state.get();
+  }
+
   function deriver(): void {
-    const dependentState = new Set<State<any>>();
     observedState.forEach(unobserve => unobserve());
     observedState.clear();
-    proxyState.set(
-      getter({
-        get: state => {
-          dependentState.add(state);
-          return state.get();
-        },
-      })
-    );
-    dependentState.forEach(state => {
-      observedState.add(state.observe(deriver));
-    });
+    dependentState.clear();
+    proxyState.set(getter({get: getProxy}));
   }
 
   deriver();
