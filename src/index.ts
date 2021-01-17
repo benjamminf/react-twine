@@ -1,6 +1,9 @@
 export {default as createSelector} from './createSelector';
 export {default as createState} from './createState';
 export {default as deriveState} from './deriveState';
-export {default as useSharedSelector} from './useSharedSelector';
+export {default as useSelector} from './useSelector';
 export {default as useSharedState} from './useSharedState';
+export {default as useAsync} from './useAsync';
+export {default as useAsyncSelector} from './useAsyncSelector';
+export {default as useAsyncState} from './useAsyncState';
 export {default as memo} from './memo';

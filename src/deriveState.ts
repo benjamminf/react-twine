@@ -7,11 +7,11 @@ export type Setter<T> = (
   args: {get: GetFunction; set: SetFunction}
 ) => void;
 
-function getFunction<V>(state: State<V>): V {
+function getFunction<T>(state: State<T>): T {
   return state.get();
 }
 
-function setFunction<V>(state: State<V>, value: SetValue<V>): void {
+function setFunction<T>(state: State<T>, value: SetValue<T>): void {
   state.set(value);
 }
 

@@ -26,12 +26,14 @@ export default function createState<T>(
     current = current ?? {
       value: defaultValue instanceof Function ? defaultValue() : defaultValue,
     };
+
     return current.value;
   }
 
   function set(value: SetValue<T>): void {
     const oldValue = get();
     const newValue = value instanceof Function ? value(oldValue) : value;
+
     if (newValue !== oldValue) {
       current = {value: newValue};
       Array.from(observers).forEach(observer => observer(newValue, oldValue));
@@ -40,6 +42,7 @@ export default function createState<T>(
 
   function observe(observer: Observer<T>): Unobserve {
     observers.add(observer);
+
     return () => observers.delete(observer);
   }
 

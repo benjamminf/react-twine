@@ -24,7 +24,7 @@ import {
   createState,
   createSelector,
   useSharedState,
-  useSharedSelector,
+  useSelector,
 } from 'react-twine';
 
 const counterState = createState(0);
@@ -32,7 +32,7 @@ const counterDoubleSelector = createSelector(({get}) => get(counterState) * 2);
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
-  const countDouble = useSharedSelector(counterDoubleSelector);
+  const countDouble = useSelector(counterDoubleSelector);
   const increment = () => setCounter(count + 1);
 
   return (
@@ -74,7 +74,7 @@ function Counter() {
 
 ```jsx
 import React from 'react';
-import {createStateMap, useSharedSelector} from 'react-twine';
+import {createStateMap, useSelector} from 'react-twine';
 
 const mouseState = createStateMap({x: 0, y: 0});
 
@@ -83,10 +83,10 @@ window.addEventListener('mousemove', event => {
 });
 
 function MouseCoordinates() {
-  const mouseX = useSharedSelector(mouseState.x);
-  const mouseY = useSharedSelector(mouseState.y);
+  const mouseX = useSelector(mouseState.x);
+  const mouseY = useSelector(mouseState.y);
   // Or:
-  // const {x: mouseX, y: mouseY} = useSharedSelector(mouseState);
+  // const {x: mouseX, y: mouseY} = useSelector(mouseState);
 
   return (
     <p>
@@ -100,12 +100,12 @@ function MouseCoordinates() {
 
 ```jsx
 import React from 'react';
-import {createState, stateFactory, useSharedSelector} from 'react-twine';
+import {createState, stateFactory, useSelector} from 'react-twine';
 
 const itemStateFactory = stateFactory(key => createState(`Item ${key}`));
 
 function Item(props) {
-  const item = useSharedSelector(itemStateFactory(props.itemKey));
+  const item = useSelector(itemStateFactory(props.itemKey));
 
   return <p>This item: {item}</p>;
 }
@@ -115,7 +115,7 @@ function Item(props) {
 
 ```jsx
 import React from 'react';
-import {createState, useAsyncSharedState} from 'react-twine';
+import {createState, useAsyncState} from 'react-twine';
 import delay from 'delay';
 
 const counterState = createState(async () => {
@@ -124,12 +124,12 @@ const counterState = createState(async () => {
 });
 
 function Counter() {
-  const [count, setCounter] = useAsyncSharedState(counterState);
-  const increment = () => count != null && setCounter(count + 1);
+  const [count, setCounter] = useAsyncState(counterState);
+  const increment = () => setCounter(count => count + 1);
   // Or:
   // const [countPromise, setCounterPromise] = useSharedState(counterState);
   // const {value: count} = useAsync(() => countPromise, [countPromise]);
-  // const increment = () => count != null && setCounterPromise(Promise.resolve(count + 1));
+  // const increment = () => setCounterPromise(promise => promise.then(count => count + 1));
 
   return <button onClick={increment}>{count ?? 'loading...'}</button>;
 }
@@ -143,7 +143,7 @@ import {
   createState,
   createSelector,
   useSharedState,
-  useAsyncSharedSelector,
+  useAsyncSelector,
 } from 'react-twine';
 import delay from 'delay';
 
@@ -158,9 +158,9 @@ function Counter() {
   const [count, setCounter] = useSharedState(counterState);
   const increment = () => setCounter(count + 1);
 
-  const [countDouble] = useAsyncSharedSelector(counterDoubleSelector);
+  const [countDouble] = useAsyncSelector(counterDoubleSelector);
   // Or:
-  // const countDoublePromise = useSharedSelector(counterDoubleSelector);
+  // const countDoublePromise = useSelector(counterDoubleSelector);
   // const {value: countDouble} = useAsync(() => countDoublePromise, [countDoublePromise]);
 
   return (

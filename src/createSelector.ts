@@ -25,6 +25,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
       dependentState.add(state);
       observedState.add(state.observe(deriver));
     }
+
     return state.get();
   }
 
