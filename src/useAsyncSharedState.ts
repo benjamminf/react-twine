@@ -9,7 +9,12 @@ export default function useAsyncSharedState<T>(
   const [promise, setPromise] = useSharedState(state);
   const {value, error} = useAsync(() => promise, [promise]);
   const setValue: SetMethod<T | Promise<T>> = useCallback(
-    value => setPromise(Promise.resolve(value)),
+    value =>
+      setPromise(
+        value instanceof Function
+          ? promise => promise.then(value)
+          : Promise.resolve(value)
+      ),
     [setPromise]
   );
 
