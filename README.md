@@ -3,9 +3,6 @@
 ## Creating state
 
 ```jsx
-import React from 'react';
-import {createState, useSharedState} from 'react-twine';
-
 const counterState = createState(0);
 
 function Counter() {
@@ -19,14 +16,6 @@ function Counter() {
 ## Creating selectors
 
 ```jsx
-import React from 'react';
-import {
-  createState,
-  createSelector,
-  useSharedState,
-  useSelector,
-} from 'react-twine';
-
 const counterState = createState(0);
 const counterDoubleSelector = createSelector(({get}) => get(counterState) * 2);
 
@@ -46,9 +35,6 @@ function Counter() {
 ## Deriving state
 
 ```jsx
-import React from 'react';
-import {createState, deriveState, useSharedState} from 'react-twine';
-
 const counterState = createState(0);
 const counterDoubleState = deriveState(
   ({get}) => get(counterState) * 2,
@@ -73,9 +59,6 @@ function Counter() {
 ## Creating state maps
 
 ```jsx
-import React from 'react';
-import {createStateMap, useSelector} from 'react-twine';
-
 const mouseState = createStateMap({x: 0, y: 0});
 
 window.addEventListener('mousemove', event => {
@@ -99,9 +82,6 @@ function MouseCoordinates() {
 ## Creating state factories
 
 ```jsx
-import React from 'react';
-import {createState, stateFactory, useSelector} from 'react-twine';
-
 const itemStateFactory = stateFactory(key => createState(`Item ${key}`));
 
 function Item(props) {
@@ -114,10 +94,6 @@ function Item(props) {
 ## Defaulting state asynchronously
 
 ```jsx
-import React from 'react';
-import {createState, useAsyncState} from 'react-twine';
-import delay from 'delay';
-
 const counterState = createState(async () => {
   await delay(1000);
   return 0;
@@ -138,15 +114,6 @@ function Counter() {
 ## Selecting asynchronously
 
 ```jsx
-import React from 'react';
-import {
-  createState,
-  createSelector,
-  useSharedState,
-  useAsyncSelector,
-} from 'react-twine';
-import delay from 'delay';
-
 const counterState = createState(0);
 const counterDoubleSelector = createSelector(async ({get}) => {
   const counter = get(counterState);
