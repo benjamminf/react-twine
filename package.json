@@ -1,9 +1,9 @@
 {
-  "name": "react-sharestate",
+  "name": "react-twine",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/react-sharestate.cjs.js",
-  "module": "dist/react-sharestate.esm.js",
+  "main": "dist/react-twine.cjs.js",
+  "module": "dist/react-twine.esm.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
     "build:types": "tsc --emitDeclarationOnly",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/benjamminf/react-sharestate.git"
+    "url": "git+https://github.com/benjamminf/react-twine.git"
   },
   "author": "Ben Fleming",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/benjamminf/react-sharestate/issues"
+    "url": "https://github.com/benjamminf/react-twine/issues"
   },
-  "homepage": "https://github.com/benjamminf/react-sharestate#readme",
+  "homepage": "https://github.com/benjamminf/react-twine#readme",
   "peerDependencies": {
     "react": "^17.0.1"
   },

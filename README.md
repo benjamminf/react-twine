@@ -1,10 +1,10 @@
-# react-sharestate
+# react-twine
 
 ## Creating state
 
 ```jsx
 import React from 'react';
-import {createState, useSharedState} from 'react-sharestate';
+import {createState, useSharedState} from 'react-twine';
 
 const counterState = createState(0);
 
@@ -25,7 +25,7 @@ import {
   createSelector,
   useSharedState,
   useSharedSelector,
-} from 'react-sharestate';
+} from 'react-twine';
 
 const counterState = createState(0);
 const counterDoubleSelector = createSelector(({get}) => get(counterState) * 2);
@@ -47,7 +47,7 @@ function Counter() {
 
 ```jsx
 import React from 'react';
-import {createState, deriveState, useSharedState} from 'react-sharestate';
+import {createState, deriveState, useSharedState} from 'react-twine';
 
 const counterState = createState(0);
 const counterDoubleState = deriveState(
@@ -74,7 +74,7 @@ function Counter() {
 
 ```jsx
 import React from 'react';
-import {createStateMap, useSharedSelector} from 'react-sharestate';
+import {createStateMap, useSharedSelector} from 'react-twine';
 
 const mouseState = createStateMap({x: 0, y: 0});
 
@@ -100,7 +100,7 @@ function MouseCoordinates() {
 
 ```jsx
 import React from 'react';
-import {createState, stateFactory, useSharedSelector} from 'react-sharestate';
+import {createState, stateFactory, useSharedSelector} from 'react-twine';
 
 const itemStateFactory = stateFactory(key => createState(`Item ${key}`));
 
@@ -115,7 +115,7 @@ function Item(props) {
 
 ```jsx
 import React from 'react';
-import {createState, useAsyncSharedState} from 'react-sharestate';
+import {createState, useAsyncSharedState} from 'react-twine';
 import delay from 'delay';
 
 const counterState = createState(async () => {
@@ -144,7 +144,7 @@ import {
   createSelector,
   useSharedState,
   useAsyncSharedSelector,
-} from 'react-sharestate';
+} from 'react-twine';
 import delay from 'delay';
 
 const counterState = createState(0);
