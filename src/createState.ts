@@ -3,7 +3,7 @@ export type DefaultValue<T> = T | (() => T);
 export type GetValue<T> = T;
 export type GetMethod<T> = () => GetValue<T>;
 
-export type SetValue<T> = T | ((currentValue: T | undefined) => T);
+export type SetValue<T> = T;
 export type SetMethod<T> = (value: SetValue<T>) => void;
 
 export type Observer<T> = (value: T, oldValue: T | undefined) => void;
@@ -30,12 +30,10 @@ export default function createState<T>(
   }
 
   function set(value: SetValue<T>): void {
-    const newValue = value instanceof Function ? value(current?.value) : value;
-
-    if (newValue !== current?.value) {
+    if (value !== current?.value) {
       const oldValue = current?.value;
-      current = {value: newValue};
-      Array.from(observers).forEach(observer => observer(newValue, oldValue));
+      current = {value};
+      Array.from(observers).forEach(observer => observer(value, oldValue));
     }
   }
 

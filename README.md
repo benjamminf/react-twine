@@ -85,7 +85,8 @@ window.addEventListener('mousemove', event => {
 function MouseCoordinates() {
   const mouseX = useSharedSelector(mouseState.x);
   const mouseY = useSharedSelector(mouseState.y);
-  // Or: const {x: mouseX, y: mouseY} = useSharedSelector(mouseState);
+  // Or:
+  // const {x: mouseX, y: mouseY} = useSharedSelector(mouseState);
 
   return (
     <p>
@@ -114,18 +115,23 @@ function Item(props) {
 
 ```jsx
 import React from 'react';
-import {createState, useSharedState} from 'react-sharestate';
-import {useAsync} from 'react-use';
+import {createState, useAsyncSharedState} from 'react-sharestate';
 import delay from 'delay';
 
-const counterState = createState(() => delay(100).then(() => 0));
+const counterState = createState(async () => {
+  await delay(1000);
+  return 0;
+});
 
 function Counter() {
-  const [countPromise, setCounterPromise] = useSharedState(counterState);
-  const count = useAsync(() => countPromise, [countPromise]);
-  const increment = () => setCounterPromise(Promise.resolve(count + 1));
+  const [count, setCounter] = useAsyncSharedState(counterState);
+  const increment = () => count != null && setCounter(count + 1);
+  // Or:
+  // const [countPromise, setCounterPromise] = useSharedState(counterState);
+  // const {value: count} = useAsync(() => countPromise, [countPromise]);
+  // const increment = () => count != null && setCounterPromise(Promise.resolve(count + 1));
 
-  return <button onClick={increment}>{count.value ?? 'loading...'}</button>;
+  return <button onClick={increment}>{count ?? 'loading...'}</button>;
 }
 ```
 
@@ -137,22 +143,25 @@ import {
   createState,
   createSelector,
   useSharedState,
-  useSharedSelector,
+  useAsyncSharedSelector,
 } from 'react-sharestate';
-import usePromise from 'react-use-promise';
 import delay from 'delay';
 
 const counterState = createState(0);
 const counterDoubleSelector = createSelector(async ({get}) => {
   const counter = get(counterState);
-  await delay(2000);
+  await delay(1000);
   return counter * 2;
 });
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
-  const [countDouble] = usePromise(useSharedSelector(counterDoubleSelector));
   const increment = () => setCounter(count + 1);
+
+  const [countDouble] = useAsyncSharedSelector(counterDoubleSelector);
+  // Or:
+  // const countDoublePromise = useSharedSelector(counterDoubleSelector);
+  // const {value: countDouble} = useAsync(() => countDoublePromise, [countDoublePromise]);
 
   return (
     <p>
