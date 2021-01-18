@@ -68,8 +68,6 @@ window.addEventListener('mousemove', event => {
 function MouseCoordinates() {
   const mouseX = useSelector(mouseState.x);
   const mouseY = useSelector(mouseState.y);
-  // Or:
-  // const {x: mouseX, y: mouseY} = useSelector(mouseState);
 
   return (
     <p>
@@ -86,8 +84,6 @@ const itemStates = createStateFactory(key => `Item ${key}`);
 
 function Item(props) {
   const item = useSelector(itemStates(props.itemKey));
-  // Or:
-  // const item = useSelector(itemStates).get(props.itemKey);
 
   return <p>This item: {item}</p>;
 }
@@ -104,10 +100,6 @@ const counterState = createState(async () => {
 function Counter() {
   const [count, setCounter] = useAsyncState(counterState);
   const increment = () => setCounter(count => count + 1);
-  // Or:
-  // const [countPromise, setCounterPromise] = useSharedState(counterState);
-  // const {value: count} = useAsync(() => countPromise, [countPromise]);
-  // const increment = () => setCounterPromise(promise => promise.then(count => count + 1));
 
   return <button onClick={increment}>{count ?? 'loading...'}</button>;
 }
@@ -125,12 +117,8 @@ const counterDoubleSelector = createSelector(async ({get}) => {
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
-  const increment = () => setCounter(count + 1);
-
   const [countDouble] = useAsyncSelector(counterDoubleSelector);
-  // Or:
-  // const countDoublePromise = useSelector(counterDoubleSelector);
-  // const {value: countDouble} = useAsync(() => countDoublePromise, [countDoublePromise]);
+  const increment = () => setCounter(count + 1);
 
   return (
     <p>
