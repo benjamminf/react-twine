@@ -1,7 +1,7 @@
 import createState, {
   GetValue,
   GetMethod,
-  Observe,
+  ObserveMethod,
   Unobserve,
   State,
 } from './createState';
@@ -11,7 +11,7 @@ export type Getter<T> = (args: {get: GetFunction}) => GetValue<T>;
 
 export type Selector<T> = {
   get: GetMethod<T>;
-  observe: Observe<T>;
+  observe: ObserveMethod<T>;
 };
 
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
