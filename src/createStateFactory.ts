@@ -1,32 +1,47 @@
-import createSelector, {Selector} from './createSelector';
+import {Selector} from './createSelector';
 import createState, {DefaultValue, State} from './createState';
+import isSelector from './isSelector';
 import isState from './isState';
-import memo from './memo';
+import isValueInRange, {ValueRange} from './isValueInRange';
+import memo, {MemoFunction} from './memo';
 
-export type StateFactory<K, V> = ((key: K) => State<V>) & Selector<Map<K, V>>;
+export type StateFactory<K, V> = MemoFunction<State<V>, K>;
 
 export default function createStateFactory<K, V>(
-  fn: (key: K) => DefaultValue<V> | State<V>
+  fn: (key: K) => DefaultValue<V> | State<V>,
+  keyRange?: ValueRange<K> | Selector<ValueRange<K>>
 ): StateFactory<K, V> {
-  const factoryKeys = createState(new Set<K>());
-
-  const stateFactory = memo<State<V>, K>(key => {
+  const factory = memo<State<V>, K>(key => {
     const defaultValOrState = fn(key);
-    const state = isState<V>(defaultValOrState)
+
+    return isState<V>(defaultValOrState)
       ? defaultValOrState
       : createState(defaultValOrState);
-
-    factoryKeys.set(keys => keys.add(key));
-
-    return state;
   });
 
-  const stateProxy = createSelector(
-    ({get}) =>
-      new Map(
-        Array.from(get(factoryKeys), key => [key, get(stateFactory(key))])
-      )
-  );
+  if (keyRange) {
+    if (isSelector(keyRange)) {
+      keyRange.observe(range => {
+        for (const key of factory.cache.keys()) {
+          if (!isValueInRange(key, range)) {
+            factory.cache.delete(key);
+          }
+        }
+      });
+    }
 
-  return Object.assign(stateFactory, stateProxy);
+    const guardedFactory = (key: K): State<V> => {
+      const range = isSelector(keyRange) ? keyRange.get() : keyRange;
+
+      if (!isValueInRange(key, range)) {
+        throw new RangeError(`State factory key "${key}" is out of bounds`);
+      }
+
+      return factory(key);
+    };
+
+    return Object.assign(guardedFactory, {cache: factory.cache});
+  }
+
+  return factory;
 }
