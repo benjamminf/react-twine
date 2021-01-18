@@ -6,6 +6,12 @@ export type AsyncState<T> = {
   complete?: boolean;
 };
 
+function asError(error: unknown): Error {
+  return error instanceof Error
+    ? error
+    : new Error(error != null ? String(error) : undefined);
+}
+
 export default function useAsync<T>(
   fn: () => Promise<T>,
   deps: DependencyList = []
@@ -14,7 +20,13 @@ export default function useAsync<T>(
 
   useEffect(() => {
     let cancelled = false;
-    fn().then(value => !cancelled && setState({value, complete: true}));
+
+    setState({complete: false});
+    fn().then(
+      value => !cancelled && setState({value, complete: true}),
+      reason => !cancelled && setState({error: asError(reason), complete: true})
+    );
+
     return () => {
       cancelled = true;
     };
