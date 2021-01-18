@@ -7,7 +7,7 @@ import createState, {
 } from './createState';
 
 export type GetFunction = <T>(state: State<T>) => GetValue<T>;
-export type Getter<T> = (args: {get: GetFunction}) => GetValue<T>;
+export type Getter<T> = (get: GetFunction) => GetValue<T>;
 
 export type Selector<T> = {
   get: GetMethod<T>;
@@ -15,7 +15,7 @@ export type Selector<T> = {
 };
 
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
-  const defaultValue = getter({get: state => state.get()});
+  const defaultValue = getter(state => state.get());
   const proxyState = createState<T>(defaultValue);
   const dependentState = new Set<State<any>>();
   const observedState = new Set<Unobserve>();
@@ -33,7 +33,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     observedState.forEach(unobserve => unobserve());
     observedState.clear();
     dependentState.clear();
-    proxyState.set(getter({get: getFunction}));
+    proxyState.set(getter(getFunction));
   }
 
   deriver();

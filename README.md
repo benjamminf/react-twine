@@ -17,7 +17,7 @@ function Counter() {
 
 ```jsx
 const counterState = createState(0);
-const counterDoubleSelector = createSelector(({get}) => get(counterState) * 2);
+const counterDoubleSelector = createSelector(get => get(counterState) * 2);
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
@@ -37,8 +37,8 @@ function Counter() {
 ```jsx
 const counterState = createState(0);
 const counterDoubleState = deriveState(
-  ({get}) => get(counterState) * 2,
-  (value, {set}) => set(value / 2)
+  get => get(counterState) * 2,
+  (value, set) => set(counterState, value / 2)
 );
 
 function Counter() {

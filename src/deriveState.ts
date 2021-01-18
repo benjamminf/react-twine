@@ -2,10 +2,7 @@ import {SetValue, State} from './createState';
 import createSelector, {GetFunction, Getter} from './createSelector';
 
 export type SetFunction = <T>(state: State<T>, value: SetValue<T>) => void;
-export type Setter<T> = (
-  value: T,
-  args: {get: GetFunction; set: SetFunction}
-) => void;
+export type Setter<T> = (value: T, set: SetFunction, get: GetFunction) => void;
 
 function getFunction<T>(state: State<T>): T {
   return state.get();
@@ -22,10 +19,11 @@ export default function deriveState<T>(
   const proxySelector = createSelector(getter);
 
   function set(value: SetValue<T>): void {
-    setter(value instanceof Function ? value(proxySelector.get()) : value, {
-      get: getFunction,
-      set: setFunction,
-    });
+    setter(
+      value instanceof Function ? value(proxySelector.get()) : value,
+      setFunction,
+      getFunction
+    );
   }
 
   return {
