@@ -82,10 +82,12 @@ function MouseCoordinates() {
 ## Creating state factories
 
 ```jsx
-const itemStateFactory = stateFactory(key => createState(`Item ${key}`));
+const itemStates = createStateFactory(key => `Item ${key}`);
 
 function Item(props) {
-  const item = useSelector(itemStateFactory(props.itemKey));
+  const item = useSelector(itemStates(props.itemKey));
+  // Or:
+  // const item = useSelector(itemStates).get(props.itemKey);
 
   return <p>This item: {item}</p>;
 }
