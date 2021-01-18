@@ -5,10 +5,10 @@ import useSharedState from './useSharedState';
 
 export default function useAsyncSharedState<T>(
   state: State<Promise<T>>
-): [T | undefined, SetMethod<T | Promise<T>>, Error | undefined] {
+): [T | undefined, SetMethod<T>, Error | undefined] {
   const [promise, setPromise] = useSharedState(state);
   const {value, error} = useAsync(() => promise, [promise]);
-  const setValue: SetMethod<T | Promise<T>> = useCallback(
+  const setValue: SetMethod<T> = useCallback(
     value =>
       setPromise(
         value instanceof Function
