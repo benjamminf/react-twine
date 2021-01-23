@@ -71,27 +71,6 @@ function Counter() {
 }
 ```
 
-## Creating state maps
-
-```jsx
-const mouseState = createStateMap({x: 0, y: 0});
-
-window.addEventListener('mousemove', event => {
-  mouseState.set({x: event.offsetX, y: event.offsetY});
-});
-
-function MouseCoordinates() {
-  const mouseX = useSelector(mouseState.x);
-  const mouseY = useSelector(mouseState.y);
-
-  return (
-    <p>
-      ({mouseX}, {mouseY})
-    </p>
-  );
-}
-```
-
 ## Creating state factories
 
 ```jsx
