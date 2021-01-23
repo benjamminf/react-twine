@@ -1,5 +1,6 @@
 import {SetValue, State} from './createState';
 import {GetFunction} from './createSelector';
+import {frameCapture} from './frame';
 
 export type SetFunction = <T>(state: State<T>, value: SetValue<T>) => void;
 export type Setter<T> = (value: T, set: SetFunction, get: GetFunction) => void;
@@ -16,6 +17,6 @@ function setFunction<T>(state: State<T>, value: SetValue<T>): void {
 
 export default function createAction<T = void>(setter: Setter<T>): Action<T> {
   return function action(payload: T): void {
-    setter(payload, setFunction, getFunction);
+    frameCapture(() => setter(payload, setFunction, getFunction));
   };
 }

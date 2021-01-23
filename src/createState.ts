@@ -1,3 +1,5 @@
+import {frameComplete} from './frame';
+
 export type DefaultValue<T> = T | (() => T);
 
 export type GetValue<T> = T;
@@ -34,10 +36,17 @@ export default function createState<T>(
     const oldValue = get();
     const newValue = value instanceof Function ? value(oldValue) : value;
 
-    if (newValue !== oldValue) {
-      current = {value: newValue};
-      Array.from(observers).forEach(observer => observer(newValue, oldValue));
-    }
+    current = {value: newValue};
+
+    frameComplete(
+      observers,
+      newValue !== oldValue
+        ? () =>
+            Array.from(observers).forEach(observer =>
+              observer(newValue, oldValue)
+            )
+        : null
+    );
   }
 
   function observe(observer: Observer<T>): Unobserve {
