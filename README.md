@@ -13,6 +13,21 @@ function Counter() {
 }
 ```
 
+## Creating actions
+
+```jsx
+const counterState = createState(0);
+const increment = createAction((incrementBy = 1, set) =>
+  set(counterState, count => count + incrementBy)
+);
+
+function Counter() {
+  const count = useSelector(counterState);
+
+  return <button onClick={increment}>{count}</button>;
+}
+```
+
 ## Creating selectors
 
 ```jsx
