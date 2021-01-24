@@ -10,7 +10,10 @@ export type SetMethod<T> = (value: SetValue<T>) => void;
 
 export type Observer<T> = (value: T, oldValue: T) => void;
 export type Unobserve = () => void;
-export type ObserveMethod<T> = (observer: Observer<T>) => Unobserve;
+export type Observers<T> = Set<Observer<T>>;
+export type ObserveMethod<T> = ((observer: Observer<T>) => Unobserve) & {
+  observers: Observers<T>;
+};
 
 export type State<T> = {
   get: GetMethod<T>;
@@ -21,7 +24,7 @@ export type State<T> = {
 export default function createState<T>(
   defaultValue: DefaultValue<T>
 ): State<T> {
-  const observers = new Set<Observer<T>>();
+  const observers: Observers<T> = new Set();
   let current: {value: T} | null = null;
 
   function get(): T {
@@ -58,6 +61,6 @@ export default function createState<T>(
   return {
     get,
     set,
-    observe,
+    observe: Object.assign(observe, {observers}),
   };
 }
