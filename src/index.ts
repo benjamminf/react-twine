@@ -6,8 +6,6 @@ export {default as createStateFactory} from './createStateFactory';
 export {default as deriveState} from './deriveState';
 export {default as isSelector} from './isSelector';
 export {default as isState} from './isState';
-export {default as memo} from './memo';
-export {default as useAsync} from './useAsync';
 export {default as useAsyncSelector} from './useAsyncSelector';
 export {default as useAsyncState} from './useAsyncState';
 export {default as useSelector} from './useSelector';
