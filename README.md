@@ -17,14 +17,14 @@ function Counter() {
 
 ```jsx
 const counterState = createState(0);
-const increment = createAction((incrementBy = 1, set) =>
-  set(counterState, count => count + incrementBy)
+const increment = createAction((_, set) =>
+  set(counterState, count => count + 1)
 );
 
 function Counter() {
   const count = useSelector(counterState);
 
-  return <button onClick={increment}>{count}</button>;
+  return <button onClick={() => increment()}>{count}</button>;
 }
 ```
 
