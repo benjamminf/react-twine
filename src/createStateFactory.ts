@@ -20,7 +20,7 @@ export default function createStateFactory<K, V>(
   });
 
   if (keyRange) {
-    if (isSelector(keyRange)) {
+    if (isSelector<ValueRange<K>>(keyRange)) {
       keyRange.observe(range => {
         for (const key of factory.cache.keys()) {
           if (!isValueInRange(key, range)) {
@@ -31,7 +31,9 @@ export default function createStateFactory<K, V>(
     }
 
     const guardedFactory = (key: K): State<V> => {
-      const range = isSelector(keyRange) ? keyRange.get() : keyRange;
+      const range = isSelector<ValueRange<K>>(keyRange)
+        ? keyRange.get()
+        : keyRange;
 
       if (!isValueInRange(key, range)) {
         throw new RangeError(`State factory key "${key}" is out of bounds`);
