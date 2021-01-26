@@ -1,4 +1,5 @@
 export {default as createAction} from './createAction';
+export {default as createFactory} from './createFactory';
 export {default as createSelector} from './createSelector';
 export {default as createSelectorFactory} from './createSelectorFactory';
 export {default as createState} from './createState';
