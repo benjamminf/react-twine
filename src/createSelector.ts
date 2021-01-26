@@ -3,11 +3,10 @@ import createState, {
   GetMethod,
   ObserveMethod,
   Unobserve,
-  State,
   Observer,
 } from './createState';
 
-export type GetFunction = <T>(state: State<T>) => GetValue<T>;
+export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
 export type Getter<T> = (get: GetFunction) => GetValue<T>;
 
 export type Selector<T> = {
@@ -19,24 +18,24 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
   const getDefaultValue = () => getter(state => state.get());
   const proxyState = createState<T>(getDefaultValue);
   const {observers} = proxyState.observe;
-  const dependentState = new Set<State<any>>();
-  const observedState = new Set<Unobserve>();
+  const dependencies = new Set<Selector<any>>();
+  const observed = new Set<Unobserve>();
   let isStale = true;
   let isObserved = false;
 
-  function getFunction<V>(state: State<V>): V {
-    if (!dependentState.has(state)) {
-      dependentState.add(state);
-      observedState.add(state.observe(observeDependent));
+  function getFunction<V>(selector: Selector<V>): V {
+    if (!dependencies.has(selector)) {
+      dependencies.add(selector);
+      observed.add(selector.observe(observeDependent));
     }
 
-    return state.get();
+    return selector.get();
   }
 
   function observeDependent(): void {
-    observedState.forEach(unobserve => unobserve());
-    observedState.clear();
-    dependentState.clear();
+    observed.forEach(unobserve => unobserve());
+    observed.clear();
+    dependencies.clear();
     isStale = true;
 
     if (isObserved) {
