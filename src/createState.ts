@@ -53,9 +53,11 @@ export default function createState<T>(
   }
 
   function observe(observer: Observer<T>): Unobserve {
-    observers.add(observer);
+    const wrappedObserver = (value: T, oldValue: T) =>
+      observer(value, oldValue);
+    observers.add(wrappedObserver);
 
-    return () => observers.delete(observer);
+    return () => observers.delete(wrappedObserver);
   }
 
   return {

@@ -207,7 +207,7 @@ describe('createState()', () => {
         expect(observer3).toBeCalled();
       });
 
-      test('should not fire the same observer multiple times', () => {
+      test('should fire the same observer multiple times', () => {
         const state = createState(1);
         const observer = mockFn();
         state.observe(observer);
@@ -215,7 +215,7 @@ describe('createState()', () => {
         state.observe(observer);
         expect(observer).not.toBeCalled();
         state.set(2);
-        expect(observer).toBeCalledTimes(1);
+        expect(observer).toBeCalledTimes(3);
       });
     });
 
