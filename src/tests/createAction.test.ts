@@ -137,5 +137,53 @@ describe('createAction()', () => {
       expect(state3.get()).toBe(6);
       expect(observer).toBeCalledTimes(3);
     });
+
+    test('should fire once with multiple sets on same state using nested actions', () => {
+      const state = createState(1);
+      const action1 = createAction((_, set) => set(state, 2));
+      const action2 = createAction((_, set) => {
+        action1();
+        set(state, 3);
+      });
+      const action3 = createAction((_, set) => {
+        action2();
+        set(state, 4);
+      });
+      const observer = mockFn();
+      state.observe(observer);
+      expect(state.get()).toBe(1);
+      expect(observer).not.toBeCalled();
+      action3();
+      expect(state.get()).toBe(4);
+      expect(observer).toBeCalledTimes(1);
+    });
+
+    test('should fire multiple with multiple sets on differing state using nested actions', () => {
+      const state1 = createState(1);
+      const state2 = createState(2);
+      const state3 = createState(3);
+      const action1 = createAction((_, set) => set(state1, 4));
+      const action2 = createAction((_, set) => {
+        action1();
+        set(state2, 5);
+      });
+      const action3 = createAction((_, set) => {
+        action2();
+        set(state3, 6);
+      });
+      const observer = mockFn();
+      state1.observe(observer);
+      state2.observe(observer);
+      state3.observe(observer);
+      expect(state1.get()).toBe(1);
+      expect(state2.get()).toBe(2);
+      expect(state3.get()).toBe(3);
+      expect(observer).not.toBeCalled();
+      action3();
+      expect(state1.get()).toBe(4);
+      expect(state2.get()).toBe(5);
+      expect(state3.get()).toBe(6);
+      expect(observer).toBeCalledTimes(3);
+    });
   });
 });
