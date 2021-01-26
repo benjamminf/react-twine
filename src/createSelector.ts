@@ -14,9 +14,19 @@ export type Selector<T> = {
   observe: ObserveMethod<T>;
 };
 
+const DEFAULT_VALUE = Symbol();
+type DefaultValue = typeof DEFAULT_VALUE;
+
+function enforceValue<T>(value: T | DefaultValue): T {
+  if (value === DEFAULT_VALUE) {
+    throw new Error(`Trying to access selector value before it's computed`);
+  }
+
+  return value;
+}
+
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
-  const getDefaultValue = () => getter(state => state.get());
-  const proxyState = createState<T>(getDefaultValue);
+  const proxyState = createState<T | DefaultValue>(DEFAULT_VALUE);
   const {observers} = proxyState.observe;
   const dependencies = new Set<Selector<any>>();
   const observed = new Set<Unobserve>();
@@ -50,17 +60,19 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     }
   }
 
-  function get() {
+  function get(): T {
     computeValue();
 
-    return proxyState.get();
+    return enforceValue(proxyState.get());
   }
 
   function observe(observer: Observer<T>) {
     computeValue();
 
-    const unobserve = proxyState.observe(observer);
     isObserved = true;
+    const unobserve = proxyState.observe((value, oldValue) =>
+      observer(enforceValue(value), enforceValue(oldValue))
+    );
 
     return () => {
       unobserve();
