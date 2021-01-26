@@ -28,3 +28,7 @@ export function frameComplete(key: any, task: Task | null): void {
     task?.();
   }
 }
+
+export function isFrameCapturing(): boolean {
+  return isCapturing;
+}

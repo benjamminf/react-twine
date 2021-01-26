@@ -83,6 +83,16 @@ describe('createAction()', () => {
       action();
       expect(state.get()).toBe(2);
     });
+
+    test('should throw error when setting asynchronously', () => {
+      const state = createState(1);
+      const action = createAction((_, set) => {
+        setTimeout(() => {
+          expect(set(state, 2)).toThrowError();
+        }, 0);
+      });
+      action();
+    });
   });
 
   describe('when observing', () => {

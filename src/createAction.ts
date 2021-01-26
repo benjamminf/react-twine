@@ -1,6 +1,6 @@
 import {SetValue, State} from './createState';
 import {GetFunction} from './createSelector';
-import {frameCapture} from './frame';
+import {frameCapture, isFrameCapturing} from './frame';
 
 export type SetFunction = <T>(state: State<T>, value: SetValue<T>) => void;
 export type Setter<T> = (value: T, set: SetFunction, get: GetFunction) => void;
@@ -12,6 +12,10 @@ function getFunction<T>(state: State<T>): T {
 }
 
 function setFunction<T>(state: State<T>, value: SetValue<T>): void {
+  if (!isFrameCapturing()) {
+    throw new Error('State cannot be set asynchronously within an action');
+  }
+
   state.set(value);
 }
 
