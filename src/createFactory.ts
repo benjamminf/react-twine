@@ -28,7 +28,7 @@ export default function createFactory<K, V>(
         : keyRange;
 
       if (!isValueInRange(key, range)) {
-        throw new RangeError(`State factory key "${key}" is out of bounds`);
+        throw new RangeError(`Factory key "${key}" is out of bounds`);
       }
 
       return factory(key);
