@@ -1,5 +1,6 @@
 import createAction from '../createAction';
 import createState from '../createState';
+import {mockFn} from './testUtils';
 
 describe('createAction()', () => {
   describe('when dispatching', () => {
@@ -88,7 +89,7 @@ describe('createAction()', () => {
     test('should fire once with one set', () => {
       const state = createState(1);
       const action = createAction((_, set) => set(state, 2));
-      const observer = jest.fn();
+      const observer = mockFn();
       state.observe(observer);
       expect(state.get()).toBe(1);
       expect(observer).not.toBeCalled();
@@ -104,7 +105,7 @@ describe('createAction()', () => {
         set(state, 3);
         set(state, 4);
       });
-      const observer = jest.fn();
+      const observer = mockFn();
       state.observe(observer);
       expect(state.get()).toBe(1);
       expect(observer).not.toBeCalled();
@@ -122,7 +123,7 @@ describe('createAction()', () => {
         set(state2, 5);
         set(state3, 6);
       });
-      const observer = jest.fn();
+      const observer = mockFn();
       state1.observe(observer);
       state2.observe(observer);
       state3.observe(observer);
