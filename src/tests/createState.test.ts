@@ -45,28 +45,28 @@ describe('createState()', () => {
 
     describe('function evaluation', () => {
       test('should execute at get', () => {
-        const defaultValue = mockFn(() => 1);
-        const state = createState(defaultValue);
-        expect(defaultValue).not.toBeCalled();
+        const initialValue = mockFn(() => 1);
+        const state = createState(initialValue);
+        expect(initialValue).not.toBeCalled();
         state.get();
-        expect(defaultValue).toBeCalled();
+        expect(initialValue).toBeCalled();
       });
 
       test('should execute at set', () => {
-        const defaultValue = mockFn(() => 1);
-        const state = createState(defaultValue);
-        expect(defaultValue).not.toBeCalled();
+        const initialValue = mockFn(() => 1);
+        const state = createState(initialValue);
+        expect(initialValue).not.toBeCalled();
         state.set(2);
-        expect(defaultValue).toBeCalled();
+        expect(initialValue).toBeCalled();
       });
 
       test('should not execute at observe', () => {
-        const defaultValue = mockFn(() => 1);
-        const state = createState(defaultValue);
-        expect(defaultValue).not.toBeCalled();
+        const initialValue = mockFn(() => 1);
+        const state = createState(initialValue);
+        expect(initialValue).not.toBeCalled();
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         state.observe(() => {});
-        expect(defaultValue).not.toBeCalled();
+        expect(initialValue).not.toBeCalled();
       });
     });
   });

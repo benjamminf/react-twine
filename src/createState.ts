@@ -1,6 +1,6 @@
 import {frameComplete} from './frame';
 
-export type DefaultValue<T> = T | (() => T);
+export type InitialValue<T> = T | (() => T);
 
 export type GetValue<T> = T;
 export type GetMethod<T> = () => GetValue<T>;
@@ -22,14 +22,14 @@ export type State<T> = {
 };
 
 export default function createState<T>(
-  defaultValue: DefaultValue<T>
+  initialValue: InitialValue<T>
 ): State<T> {
   const observers: Observers<T> = new Set();
   let current: {value: T} | null = null;
 
   function get(): T {
     current = current ?? {
-      value: defaultValue instanceof Function ? defaultValue() : defaultValue,
+      value: initialValue instanceof Function ? initialValue() : initialValue,
     };
 
     return current.value;

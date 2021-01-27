@@ -83,7 +83,7 @@ function Item(props) {
 }
 ```
 
-## Defaulting state asynchronously
+## Initializing state asynchronously
 
 ```jsx
 const counterState = createState(async () => {
