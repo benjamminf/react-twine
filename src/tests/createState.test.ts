@@ -52,10 +52,28 @@ describe('createState()', () => {
         expect(initialValue).toBeCalled();
       });
 
-      test('should execute at set', () => {
+      test('should not execute at set with non-callback value', () => {
         const initialValue = mockFn(() => 1);
         const state = createState(initialValue);
         expect(initialValue).not.toBeCalled();
+        state.set(2);
+        expect(initialValue).not.toBeCalled();
+      });
+
+      test('should execute at set with callback value', () => {
+        const initialValue = mockFn(() => 1);
+        const state = createState(initialValue);
+        expect(initialValue).not.toBeCalled();
+        state.set(() => 2);
+        expect(initialValue).toBeCalled();
+      });
+
+      test('should execute at set with non-callback value while observing', () => {
+        const initialValue = mockFn(() => 1);
+        const state = createState(initialValue);
+        expect(initialValue).not.toBeCalled();
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        state.observe(() => {});
         state.set(2);
         expect(initialValue).toBeCalled();
       });

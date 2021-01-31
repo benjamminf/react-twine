@@ -1,4 +1,6 @@
+import bucket, {Bucket} from './bucket';
 import {frameComplete} from './frame';
+import generateID from './generateID';
 
 export type InitialValue<T> = T | (() => T);
 
@@ -24,32 +26,34 @@ export type State<T> = {
 export default function createState<T>(
   initialValue: InitialValue<T>
 ): State<T> {
+  const stateID = generateID();
   const observers: Observers<T> = new Set();
-  let current: {value: T} | null = null;
+  let current: Bucket<T> | null = null;
 
   function get(): T {
-    current = current ?? {
-      value: initialValue instanceof Function ? initialValue() : initialValue,
-    };
+    current =
+      current ??
+      bucket(initialValue instanceof Function ? initialValue() : initialValue);
 
     return current.value;
   }
 
   function set(value: SetValue<T>): void {
-    const oldValue = get();
-    const newValue = value instanceof Function ? value(oldValue) : value;
+    const isPreviousRequired = value instanceof Function || observers.size > 0;
+    const previous = isPreviousRequired ? bucket(get()) : null;
+    const next = bucket(value instanceof Function ? value(get()) : value);
 
-    current = {value: newValue};
+    current = next;
 
-    frameComplete(
-      observers,
-      newValue !== oldValue
-        ? () =>
-            Array.from(observers).forEach(observer =>
-              observer(newValue, oldValue)
-            )
-        : null
-    );
+    if (observers.size > 0 && previous && next.value !== previous.value) {
+      const currentObservers = Array.from(observers);
+
+      frameComplete(stateID, () =>
+        currentObservers.forEach(observer =>
+          observer(next.value, previous.value)
+        )
+      );
+    }
   }
 
   function observe(observer: Observer<T>): Unobserve {
