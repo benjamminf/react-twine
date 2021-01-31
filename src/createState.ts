@@ -39,13 +39,12 @@ export default function createState<T>(
   }
 
   function set(value: SetValue<T>): void {
-    const isPreviousRequired = value instanceof Function || observers.size > 0;
-    const previous = isPreviousRequired ? bucket(get()) : null;
+    const previous = observers.size > 0 ? bucket(get()) : null;
     const next = bucket(value instanceof Function ? value(get()) : value);
 
     current = next;
 
-    if (observers.size > 0 && previous && next.value !== previous.value) {
+    if (previous && next.value !== previous.value) {
       const currentObservers = Array.from(observers);
 
       frameComplete(stateID, () =>
