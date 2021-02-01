@@ -14,7 +14,7 @@ export type Observer<T> = (value: T, oldValue: T) => void;
 export type Unobserve = () => void;
 export type Observers<T> = Set<Observer<T>>;
 export type ObserveMethod<T> = ((observer: Observer<T>) => Unobserve) & {
-  observers: Observers<T>;
+  observers: Observers<any>;
 };
 
 export type State<T> = {
