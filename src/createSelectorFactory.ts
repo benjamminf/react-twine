@@ -10,10 +10,10 @@ export default function createSelectorFactory<K, V>(
   keyRange?: ValueRange<K> | Selector<ValueRange<K>>
 ): SelectorFactory<K, V> {
   return createFactory(key => {
-    const defaultValOrSelector = fn(key);
+    const getterOrSelector = fn(key);
 
-    return isSelector<V>(defaultValOrSelector)
-      ? defaultValOrSelector
-      : createSelector(defaultValOrSelector);
+    return isSelector<V>(getterOrSelector)
+      ? getterOrSelector
+      : createSelector(getterOrSelector);
   }, keyRange);
 }

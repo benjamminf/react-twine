@@ -11,10 +11,10 @@ export default function createStateFactory<K, V>(
   keyRange?: ValueRange<K> | Selector<ValueRange<K>>
 ): StateFactory<K, V> {
   return createFactory(key => {
-    const defaultValOrState = fn(key);
+    const initialValueOrState = fn(key);
 
-    return isState<V>(defaultValOrState)
-      ? defaultValOrState
-      : createState(defaultValOrState);
+    return isState<V>(initialValueOrState)
+      ? initialValueOrState
+      : createState(initialValueOrState);
   }, keyRange);
 }
