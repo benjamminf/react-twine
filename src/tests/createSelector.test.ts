@@ -11,7 +11,7 @@ describe('createSelector()', () => {
 
     test('should return value from dependent state', () => {
       const state = createState(1);
-      const selector = createSelector(get => get(state) * 2);
+      const selector = createSelector(({get}) => get(state) * 2);
       expect(selector.get()).toBe(2);
       state.set(2);
       expect(selector.get()).toBe(4);
@@ -21,14 +21,14 @@ describe('createSelector()', () => {
 
     test('should return value from dependent selector', () => {
       const selector1 = createSelector(() => 1);
-      const selector2 = createSelector(get => get(selector1) * 2);
+      const selector2 = createSelector(({get}) => get(selector1) * 2);
       expect(selector2.get()).toBe(2);
     });
 
     test('should return value from dependent state and selector', () => {
       const state = createState(1);
-      const selector1 = createSelector(get => get(state) * 2);
-      const selector2 = createSelector(get => get(selector1) * -1);
+      const selector1 = createSelector(({get}) => get(state) * 2);
+      const selector2 = createSelector(({get}) => get(selector1) * -1);
       expect(selector2.get()).toBe(-2);
       state.set(2);
       expect(selector2.get()).toBe(-4);
@@ -39,7 +39,7 @@ describe('createSelector()', () => {
     test('should return value from multiple dependent state', () => {
       const state1 = createState(1);
       const state2 = createState(2);
-      const selector = createSelector(get => get(state1) + get(state2));
+      const selector = createSelector(({get}) => get(state1) + get(state2));
       expect(selector.get()).toBe(3);
       state1.set(2);
       expect(selector.get()).toBe(4);
@@ -50,16 +50,20 @@ describe('createSelector()', () => {
     test('should return value from multiple dependent selectors', () => {
       const selector1 = createSelector(() => 1);
       const selector2 = createSelector(() => 2);
-      const selector3 = createSelector(get => get(selector1) + get(selector2));
+      const selector3 = createSelector(
+        ({get}) => get(selector1) + get(selector2)
+      );
       expect(selector3.get()).toBe(3);
     });
 
     test('should return value from multiple dependent state and selectors', () => {
       const state1 = createState(1);
       const state2 = createState(2);
-      const selector1 = createSelector(get => get(state1) * 2);
-      const selector2 = createSelector(get => get(state2) * -1);
-      const selector3 = createSelector(get => get(selector1) + get(selector2));
+      const selector1 = createSelector(({get}) => get(state1) * 2);
+      const selector2 = createSelector(({get}) => get(state2) * -1);
+      const selector3 = createSelector(
+        ({get}) => get(selector1) + get(selector2)
+      );
       expect(selector3.get()).toBe(0);
       state1.set(2);
       expect(selector3.get()).toBe(2);
@@ -71,7 +75,7 @@ describe('createSelector()', () => {
   describe('when observing', () => {
     test('should fire when new value is computed', () => {
       const state = createState(1);
-      const selector = createSelector(get => get(state) ** 2);
+      const selector = createSelector(({get}) => get(state) ** 2);
       const observer = mockFn();
       selector.observe(observer);
       expect(observer).not.toBeCalled();
@@ -81,7 +85,7 @@ describe('createSelector()', () => {
 
     test('should not fire when same value is computed', () => {
       const state = createState(1);
-      const selector = createSelector(get => get(state) ** 2);
+      const selector = createSelector(({get}) => get(state) ** 2);
       const observer = mockFn();
       selector.observe(observer);
       expect(observer).not.toBeCalled();
@@ -99,7 +103,7 @@ describe('createSelector()', () => {
 
     test('should not execute with dependent state change', () => {
       const state = createState(1);
-      const getter = mockFn(get => get(state) * 2);
+      const getter = mockFn(({get}) => get(state) * 2);
       createSelector(getter);
       state.set(2);
       expect(getter).not.toBeCalled();
@@ -122,7 +126,7 @@ describe('createSelector()', () => {
 
     test('should not execute after get with dependent state change', () => {
       const state = createState(1);
-      const getter = mockFn(get => get(state) * 2);
+      const getter = mockFn(({get}) => get(state) * 2);
       const selector = createSelector(getter);
       selector.get();
       state.set(2);
@@ -131,7 +135,7 @@ describe('createSelector()', () => {
 
     test('should execute at subsequent get with dependent state change', () => {
       const state = createState(1);
-      const getter = mockFn(get => get(state) * 2);
+      const getter = mockFn(({get}) => get(state) * 2);
       const selector = createSelector(getter);
       selector.get();
       state.set(2);
@@ -149,7 +153,7 @@ describe('createSelector()', () => {
 
     test('should execute after observe with dependent state change', () => {
       const state = createState(1);
-      const getter = mockFn(get => get(state) * 2);
+      const getter = mockFn(({get}) => get(state) * 2);
       const selector = createSelector(getter);
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       selector.observe(() => {});
@@ -159,7 +163,7 @@ describe('createSelector()', () => {
 
     test('should not execute at unobserve', () => {
       const state = createState(1);
-      const getter = mockFn(get => get(state) * 2);
+      const getter = mockFn(({get}) => get(state) * 2);
       const selector = createSelector(getter);
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       const unobserve = selector.observe(() => {});
@@ -169,7 +173,7 @@ describe('createSelector()', () => {
 
     test('should not execute after unobserve with dependent state change', () => {
       const state = createState(1);
-      const getter = mockFn(get => get(state) * 2);
+      const getter = mockFn(({get}) => get(state) * 2);
       const selector = createSelector(getter);
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       const unobserve = selector.observe(() => {});

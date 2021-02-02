@@ -7,7 +7,7 @@ import createState, {
 } from './createState';
 
 export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
-export type Getter<T> = (get: GetFunction) => GetValue<T>;
+export type Getter<T> = (context: {get: GetFunction}) => GetValue<T>;
 
 export type Selector<T> = {
   get: GetMethod<T>;
@@ -55,7 +55,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
 
   function computeValue(): void {
     if (isStale) {
-      proxyState.set(getter(getFunction));
+      proxyState.set(getter({get: getFunction}));
       isStale = false;
     }
   }

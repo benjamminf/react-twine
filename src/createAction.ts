@@ -3,15 +3,15 @@ import {GetFunction, Selector} from './createSelector';
 import {frameCapture, isFrameCapturing} from './frame';
 
 export type SetFunction = <T>(state: State<T>, value: SetValue<T>) => void;
-export type Setter<T> = (
-  value: T,
-  set: SetFunction,
-  get: GetFunction,
-  dispatch: DispatchFunction
-) => void;
+export type Setter<T> = (context: {
+  value: T;
+  set: SetFunction;
+  get: GetFunction;
+  dispatch: DispatchFunction;
+}) => void;
 
-export type DispatchMethod<T> = (payload: T) => void;
-export type DispatchFunction = <T>(action: Action<T>, payload: T) => void;
+export type DispatchMethod<T> = (value: T) => void;
+export type DispatchFunction = <T>(action: Action<T>, value: T) => void;
 
 export type Action<T> = {
   dispatch: DispatchMethod<T>;
@@ -29,14 +29,19 @@ function setFunction<T>(state: State<T>, value: SetValue<T>): void {
   state.set(value);
 }
 
-function dispatchFunction<T>(action: Action<T>, payload: T): void {
-  action.dispatch(payload);
+function dispatchFunction<T>(action: Action<T>, value: T): void {
+  action.dispatch(value);
 }
 
 export default function createAction<T = void>(setter: Setter<T>): Action<T> {
-  function dispatch(payload: T): void {
+  function dispatch(value: T): void {
     frameCapture(() =>
-      setter(payload, setFunction, getFunction, dispatchFunction)
+      setter({
+        value,
+        get: getFunction,
+        set: setFunction,
+        dispatch: dispatchFunction,
+      })
     );
   }
 
