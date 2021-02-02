@@ -89,6 +89,17 @@ describe('createAction()', () => {
       });
       action.dispatch();
     });
+
+    test('should not error when dispatching asynchronously', () => {
+      const state = createState(1);
+      const action1 = createAction<number>(({value, set}) => set(state, value));
+      const action2 = createAction(({dispatch}) => {
+        setTimeout(() => {
+          expect(dispatch(action1, 2)).not.toThrowError();
+        }, 0);
+      });
+      action2.dispatch();
+    });
   });
 
   describe('when observing', () => {
