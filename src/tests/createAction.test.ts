@@ -1,4 +1,5 @@
 import createAction from '../createAction';
+import createSelector from '../createSelector';
 import createState from '../createState';
 import {mockFn} from './testUtils';
 
@@ -201,6 +202,20 @@ describe('createAction()', () => {
       expect(state2.get()).toBe(5);
       expect(state3.get()).toBe(6);
       expect(observer).toBeCalledTimes(3);
+    });
+
+    test('should fire once with multiple sets on different state using selector', () => {
+      const state1 = createState(3);
+      const state2 = createState(5);
+      const selector = createSelector(({get}) => get(state1) * get(state2));
+      const action = createAction(({set}) => {
+        set(state1, 4);
+        set(state2, 6);
+      });
+      const observer = mockFn();
+      selector.observe(observer);
+      action.dispatch();
+      expect(observer).toBeCalledTimes(1);
     });
   });
 });
