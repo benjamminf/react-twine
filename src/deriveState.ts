@@ -10,7 +10,9 @@ export default function deriveState<T>(
   const proxyAction = createAction(setter);
 
   function set(value: SetValue<T>): void {
-    proxyAction(value instanceof Function ? value(proxySelector.get()) : value);
+    proxyAction.dispatch(
+      value instanceof Function ? value(proxySelector.get()) : value
+    );
   }
 
   return {

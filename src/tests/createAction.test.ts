@@ -8,7 +8,7 @@ describe('createAction()', () => {
       const state = createState(1);
       const action = createAction((_, set) => set(state, 2));
       expect(state.get()).toBe(1);
-      action();
+      action.dispatch();
       expect(state.get()).toBe(2);
     });
 
@@ -21,7 +21,7 @@ describe('createAction()', () => {
       });
       expect(state1.get()).toBe(1);
       expect(state2.get()).toBe('hello');
-      action();
+      action.dispatch();
       expect(state1.get()).toBe(2);
       expect(state2.get()).toBe('world');
     });
@@ -30,7 +30,7 @@ describe('createAction()', () => {
       const state = createState(1);
       const action = createAction((_, set) => set(state, value => value + 1));
       expect(state.get()).toBe(1);
-      action();
+      action.dispatch();
       expect(state.get()).toBe(2);
     });
 
@@ -43,7 +43,7 @@ describe('createAction()', () => {
       });
       expect(state1.get()).toBe(1);
       expect(state2.get()).toBe('hello');
-      action();
+      action.dispatch();
       expect(state1.get()).toBe(2);
       expect(state2.get()).toBe('world');
     });
@@ -54,7 +54,7 @@ describe('createAction()', () => {
         set(state, payload)
       );
       expect(state.get()).toBe(1);
-      action(2);
+      action.dispatch(2);
       expect(state.get()).toBe(2);
     });
 
@@ -69,7 +69,7 @@ describe('createAction()', () => {
       );
       expect(state1.get()).toBe(1);
       expect(state2.get()).toBe('hello');
-      action({value1: 2, value2: 'world'});
+      action.dispatch({value1: 2, value2: 'world'});
       expect(state1.get()).toBe(2);
       expect(state2.get()).toBe('world');
     });
@@ -80,7 +80,7 @@ describe('createAction()', () => {
         set(state, get(state) + 1);
       });
       expect(state.get()).toBe(1);
-      action();
+      action.dispatch();
       expect(state.get()).toBe(2);
     });
 
@@ -91,7 +91,7 @@ describe('createAction()', () => {
           expect(set(state, 2)).toThrowError();
         }, 0);
       });
-      action();
+      action.dispatch();
     });
   });
 
@@ -103,7 +103,7 @@ describe('createAction()', () => {
       state.observe(observer);
       expect(state.get()).toBe(1);
       expect(observer).not.toBeCalled();
-      action();
+      action.dispatch();
       expect(state.get()).toBe(2);
       expect(observer).toBeCalled();
     });
@@ -119,7 +119,7 @@ describe('createAction()', () => {
       state.observe(observer);
       expect(state.get()).toBe(1);
       expect(observer).not.toBeCalled();
-      action();
+      action.dispatch();
       expect(state.get()).toBe(4);
       expect(observer).toBeCalledTimes(1);
     });
@@ -141,7 +141,7 @@ describe('createAction()', () => {
       expect(state2.get()).toBe(2);
       expect(state3.get()).toBe(3);
       expect(observer).not.toBeCalled();
-      action();
+      action.dispatch();
       expect(state1.get()).toBe(4);
       expect(state2.get()).toBe(5);
       expect(state3.get()).toBe(6);
@@ -152,18 +152,18 @@ describe('createAction()', () => {
       const state = createState(1);
       const action1 = createAction((_, set) => set(state, 2));
       const action2 = createAction((_, set) => {
-        action1();
+        action1.dispatch();
         set(state, 3);
       });
       const action3 = createAction((_, set) => {
-        action2();
+        action2.dispatch();
         set(state, 4);
       });
       const observer = mockFn();
       state.observe(observer);
       expect(state.get()).toBe(1);
       expect(observer).not.toBeCalled();
-      action3();
+      action3.dispatch();
       expect(state.get()).toBe(4);
       expect(observer).toBeCalledTimes(1);
     });
@@ -174,11 +174,11 @@ describe('createAction()', () => {
       const state3 = createState(3);
       const action1 = createAction((_, set) => set(state1, 4));
       const action2 = createAction((_, set) => {
-        action1();
+        action1.dispatch();
         set(state2, 5);
       });
       const action3 = createAction((_, set) => {
-        action2();
+        action2.dispatch();
         set(state3, 6);
       });
       const observer = mockFn();
@@ -189,7 +189,7 @@ describe('createAction()', () => {
       expect(state2.get()).toBe(2);
       expect(state3.get()).toBe(3);
       expect(observer).not.toBeCalled();
-      action3();
+      action3.dispatch();
       expect(state1.get()).toBe(4);
       expect(state2.get()).toBe(5);
       expect(state3.get()).toBe(6);
