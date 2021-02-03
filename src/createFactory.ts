@@ -39,25 +39,35 @@ export default function createFactory<K, V>(
     }
   );
 
-  const addAction = createAction<[K, V]>(({value: [key, value], set}) => {
-    set(valuesState, values => values.set(key, value));
-    set(keysState, keys => keys.add(key));
+  const addAction = createAction<Map<K, V>>(({value: addValues, set}) => {
+    set(keysState, keys => {
+      addValues.forEach((_, key) => keys.add(key));
+      return keys;
+    });
+    set(valuesState, values => {
+      addValues.forEach((value, key) => values.set(key, value));
+      return values;
+    });
+  });
+
+  const deleteAction = createAction<Set<K>>(({value: deleteKeys, set}) => {
+    set(keysState, keys => {
+      deleteKeys.forEach(key => keys.delete(key));
+      return keys;
+    });
+    set(valuesState, values => {
+      deleteKeys.forEach(key => values.delete(key));
+      return values;
+    });
   });
 
   if (isSelector<ValueRange<K>>(keyRange)) {
     keyRange.observe(range => {
-      const keys = keysState.get();
-      const values = valuesState.get();
-
-      keys.forEach(key => {
-        if (!isValueInRange(key, range)) {
-          keys.delete(key);
-          values.delete(key);
-        }
-      });
-
-      keysState.set(keys);
-      valuesState.set(values);
+      const allKeys = keysState.get();
+      const deleteKeys = new Set(
+        Array.from(allKeys).filter(key => !isValueInRange(key, range))
+      );
+      deleteAction.dispatch(deleteKeys);
     });
   }
 
@@ -70,11 +80,12 @@ export default function createFactory<K, V>(
       throw new RangeError(`Factory key "${key}" is out of bounds`);
     }
 
-    const values = valuesState.get();
-    const value = values.get(key) ?? fn(key);
+    const allValues = valuesState.get();
+    const value = allValues.get(key) ?? fn(key);
 
-    if (!values.has(key)) {
-      addAction.dispatch([key, value]);
+    if (!allValues.has(key)) {
+      const addValues = new Map([[key, value]]);
+      addAction.dispatch(addValues);
     }
 
     return value;
