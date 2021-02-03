@@ -23,8 +23,9 @@ const incrementAction = createAction(({value, set}) =>
 
 function Counter() {
   const count = useSelector(counterState);
+  const increment = useAction(incrementAction, 1);
 
-  return <button onClick={() => incrementAction.dispatch(1)}>{count}</button>;
+  return <button onClick={increment}>{count}</button>;
 }
 ```
 
