@@ -9,6 +9,13 @@ describe('createSelector()', () => {
       expect(selector.get()).toBe(1);
     });
 
+    test('should return function value', () => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const fn = () => {};
+      const selector = createSelector(() => fn);
+      expect(selector.get()).toBe(fn);
+    });
+
     test('should return value from dependent state', () => {
       const state = createState(1);
       const selector = createSelector(({get}) => get(state) * 2);

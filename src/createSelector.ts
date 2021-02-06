@@ -55,7 +55,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
 
   function computeValue(): void {
     if (isStale) {
-      proxyState.set(getter({get: getFunction}));
+      proxyState.set(() => getter({get: getFunction}));
       isStale = false;
     }
   }
