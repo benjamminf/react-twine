@@ -3,7 +3,7 @@ import {SetMethod, State} from './createState';
 import useAsync from './useAsync';
 import useSharedState from './useSharedState';
 
-export default function useAsyncSharedState<T>(
+export default function useAsyncState<T>(
   state: State<Promise<T>>
 ): [T | undefined, SetMethod<T>, Error | undefined] {
   const [promise, setPromise] = useSharedState(state);

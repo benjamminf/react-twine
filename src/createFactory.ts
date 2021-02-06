@@ -13,10 +13,14 @@ export type Factory<K, V> = ((key: K) => V) &
 
 export default function createFactory<K, V>(
   fn: (key: K) => V,
-  keyRange?: ValueRange<K> | Selector<ValueRange<K>>
+  keyRange: ValueRange<K> | Selector<ValueRange<K>> = () => true
 ): Factory<K, V> {
   const keysState = createMutableState(new Set<K>());
   const keysSelector = createSelector(({get}) => new Set(get(keysState)));
+
+  const keyRangeSelector = isSelector<ValueRange<K>>(keyRange)
+    ? keyRange
+    : createSelector(() => keyRange);
 
   const valuesState = createMutableState(new Map<K, V>());
 
@@ -40,43 +44,36 @@ export default function createFactory<K, V>(
   );
 
   const addAction = createAction<Map<K, V>>(({value: addValues, set}) => {
-    set(keysState, keys => {
-      addValues.forEach((_, key) => keys.add(key));
-      return keys;
-    });
-    set(valuesState, values => {
-      addValues.forEach((value, key) => values.set(key, value));
-      return values;
-    });
+    set(
+      keysState,
+      keys => (addValues.forEach((_, key) => keys.add(key)), keys)
+    );
+    set(
+      valuesState,
+      values => (
+        addValues.forEach((value, key) => values.set(key, value)), values
+      )
+    );
   });
 
   const deleteAction = createAction<Set<K>>(({value: deleteKeys, set}) => {
-    set(keysState, keys => {
-      deleteKeys.forEach(key => keys.delete(key));
-      return keys;
-    });
-    set(valuesState, values => {
-      deleteKeys.forEach(key => values.delete(key));
-      return values;
-    });
+    set(keysState, keys => (deleteKeys.forEach(key => keys.delete(key)), keys));
+    set(
+      valuesState,
+      values => (deleteKeys.forEach(key => values.delete(key)), values)
+    );
   });
 
-  if (isSelector<ValueRange<K>>(keyRange)) {
-    keyRange.observe(range => {
-      const allKeys = keysState.get();
-      const deleteKeys = new Set(
-        Array.from(allKeys).filter(key => !isValueInRange(key, range))
-      );
-      deleteAction.dispatch(deleteKeys);
-    });
-  }
+  keyRangeSelector.observe(range => {
+    const allKeys = keysState.get();
+    const deleteKeys = new Set(
+      Array.from(allKeys).filter(key => !isValueInRange(key, range))
+    );
+    deleteAction.dispatch(deleteKeys);
+  });
 
   function factory(key: K): V {
-    const range = isSelector<ValueRange<K>>(keyRange)
-      ? keyRange.get()
-      : keyRange;
-
-    if (range && !isValueInRange(key, range)) {
+    if (!isValueInRange(key, keyRangeSelector.get())) {
       throw new RangeError(`Factory key "${key}" is out of bounds`);
     }
 
