@@ -14,11 +14,11 @@ export type Selector<T> = {
   observe: ObserveMethod<T>;
 };
 
-const INITIAL_VALUE = Symbol();
-type InitialValue = typeof INITIAL_VALUE;
+const UNINITIALIZED_VALUE = Symbol('Uninitialized value');
+type UninitializedValue = typeof UNINITIALIZED_VALUE;
 
-function enforceValue<T>(value: T | InitialValue): T {
-  if (value === INITIAL_VALUE) {
+function enforceValue<T>(value: T | UninitializedValue): T {
+  if (value === UNINITIALIZED_VALUE) {
     throw new Error(`Trying to access selector value before it's computed`);
   }
 
@@ -26,7 +26,7 @@ function enforceValue<T>(value: T | InitialValue): T {
 }
 
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
-  const proxyState = createState<T | InitialValue>(INITIAL_VALUE);
+  const proxyState = createState<T | UninitializedValue>(UNINITIALIZED_VALUE);
   const {observers} = proxyState.observe;
   const dependencies = new Set<Selector<any>>();
   const observed = new Set<Unobserve>();
