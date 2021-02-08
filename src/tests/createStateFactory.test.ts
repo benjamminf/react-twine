@@ -2,6 +2,7 @@ import bucket from '../bucket';
 import createStateFactory from '../createStateFactory';
 import createState from '../createState';
 import {mockFn} from './testUtils';
+import {frameCapture} from '../frame';
 
 describe('createStateFactory()', () => {
   describe('when fetching', () => {
@@ -68,6 +69,23 @@ describe('createStateFactory()', () => {
       factory(1);
       factory(2).set('new2');
       expect(observer).toBeCalledTimes(3);
+      expect(factory.get()).toEqual(
+        new Map([
+          [1, 'item1'],
+          [2, 'new2'],
+        ])
+      );
+    });
+
+    test('should update state values efficiently whenever state is updated', () => {
+      const factory = createStateFactory((key: number) => `item${key}`);
+      const observer = mockFn();
+      factory.observe(observer);
+      frameCapture(() => {
+        factory(1);
+        factory(2).set('new2');
+      });
+      expect(observer).toBeCalledTimes(1);
       expect(factory.get()).toEqual(
         new Map([
           [1, 'item1'],
