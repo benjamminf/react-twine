@@ -4,7 +4,7 @@ export {default as createSelector} from './createSelector';
 export {default as createSelectorFactory} from './createSelectorFactory';
 export {default as createState} from './createState';
 export {default as createStateFactory} from './createStateFactory';
-export {default as deriveState} from './deriveState';
+export {default as createProxyState} from './createProxyState';
 export {default as isSelector} from './isSelector';
 export {default as isState} from './isState';
 export {default as useAsyncSelector} from './useAsyncSelector';
