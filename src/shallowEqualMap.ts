@@ -1,4 +1,4 @@
-export default function mapCompare<K, V>(
+export default function shallowEqualMap<K, V>(
   mapA: Map<K, V>,
   mapB: Map<K, V>
 ): boolean {
