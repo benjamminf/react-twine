@@ -2,7 +2,7 @@ import {SetValue, State} from './createState';
 import createSelector, {Getter} from './createSelector';
 import createAction, {Setter} from './createAction';
 
-export default function deriveState<T>(
+export default function createProxyState<T>(
   getter: Getter<T>,
   setter: Setter<T>
 ): State<T> {

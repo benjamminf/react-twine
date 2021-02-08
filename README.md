@@ -48,11 +48,11 @@ function Counter() {
 }
 ```
 
-## Deriving state
+## Creating proxy state
 
 ```jsx
 const counterState = createState(0);
-const counterDoubleState = deriveState(
+const counterDoubleState = createProxyState(
   ({get}) => get(counterState) * 2,
   ({value, set}) => set(counterState, value / 2)
 );
