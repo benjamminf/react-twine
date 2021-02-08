@@ -25,7 +25,7 @@ function shallowEqual<K, V>(
     );
   }
 
-  return false;
+  throw new TypeError('Object must be a set or map instance');
 }
 
 export default shallowEqual;

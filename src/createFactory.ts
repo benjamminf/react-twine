@@ -3,6 +3,7 @@ import createMutableState from './createMutableState';
 import createSelector, {Selector} from './createSelector';
 import {State} from './createState';
 import deriveState from './deriveState';
+import filter from './filter';
 import isSelector from './isSelector';
 import isValueInRange, {ValueRange} from './isValueInRange';
 import shallowEqual from './shallowEqual';
@@ -65,9 +66,7 @@ export default function createFactory<K, V>(
 
   keyRangeSelector.observe(range => {
     const allKeys = keysState.get();
-    const deleteKeys = new Set(
-      Array.from(allKeys).filter(key => !isValueInRange(key, range))
-    );
+    const deleteKeys = filter(allKeys, key => !isValueInRange(key, range));
     deleteAction.dispatch(deleteKeys);
   });
 
