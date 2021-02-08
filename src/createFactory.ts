@@ -5,8 +5,7 @@ import {State} from './createState';
 import deriveState from './deriveState';
 import isSelector from './isSelector';
 import isValueInRange, {ValueRange} from './isValueInRange';
-import shallowEqualMap from './shallowEqualMap';
-import shallowEqualSet from './shallowEqualSet';
+import shallowEqual from './shallowEqual';
 
 export type Factory<K, V> = ((key: K) => V) &
   State<Map<K, V>> & {keys: Selector<Set<K>>};
@@ -30,8 +29,8 @@ export default function createFactory<K, V>(
       const newKeys = new Set(newValues.keys());
       const oldValues = get(valuesState);
       const oldKeys = get(keysState);
-      const hasNewKeys = !shallowEqualSet(newKeys, oldKeys);
-      const hasNewValues = hasNewKeys || !shallowEqualMap(newValues, oldValues);
+      const hasNewKeys = !shallowEqual(newKeys, oldKeys);
+      const hasNewValues = hasNewKeys || !shallowEqual(newValues, oldValues);
 
       if (hasNewValues) {
         set(valuesState, new Map(newValues));
