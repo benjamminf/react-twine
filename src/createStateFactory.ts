@@ -1,20 +1,43 @@
-import createFactory, {Factory} from './createFactory';
+import createFactory, {
+  FactoryFunction,
+  FactoryProperties,
+} from './createFactory';
 import {Selector} from './createSelector';
 import createState, {InitialValue, State} from './createState';
+import deriveState from './deriveState';
 import isState from './isState';
 import {ValueRange} from './isValueInRange';
+import map from './map';
 
-export type StateFactory<K, V> = Factory<K, State<V>>;
+export type StateFactory<K, V> = FactoryFunction<K, State<V>> &
+  FactoryProperties<K> &
+  State<Map<K, V>>;
 
 export default function createStateFactory<K, V>(
   fn: (key: K) => InitialValue<V> | State<V>,
   keyRange?: ValueRange<K> | Selector<ValueRange<K>>
 ): StateFactory<K, V> {
-  return createFactory(key => {
+  const proxyFactory = createFactory(key => {
     const initialValueOrState = fn(key);
-
     return isState<V>(initialValueOrState)
       ? initialValueOrState
       : createState(initialValueOrState);
   }, keyRange);
+
+  const factoryState = deriveState(
+    ({get}) => map(get(proxyFactory), state => get(state)),
+    ({value: values, set}) => {
+      values.forEach((value, key) => set(proxyFactory(key), value));
+      set(
+        proxyFactory,
+        map(values, (_, key) => proxyFactory(key))
+      );
+    }
+  );
+
+  function factory(key: K): State<V> {
+    return proxyFactory(key);
+  }
+
+  return Object.assign(factory, proxyFactory, factoryState);
 }

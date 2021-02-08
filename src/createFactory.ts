@@ -8,8 +8,12 @@ import isSelector from './isSelector';
 import isValueInRange, {ValueRange} from './isValueInRange';
 import shallowEqual from './shallowEqual';
 
-export type Factory<K, V> = ((key: K) => V) &
-  State<Map<K, V>> & {keys: Selector<Set<K>>};
+export type FactoryFunction<K, V> = (key: K) => V;
+export type FactoryProperties<K> = {keys: Selector<Set<K>>};
+
+export type Factory<K, V> = FactoryFunction<K, V> &
+  FactoryProperties<K> &
+  State<Map<K, V>>;
 
 export default function createFactory<K, V>(
   fn: (key: K) => V,
