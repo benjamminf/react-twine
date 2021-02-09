@@ -1,8 +1,8 @@
 import createAction from './createAction';
 import createMutableState from './createMutableState';
+import createProxyState from './createProxyState';
 import createSelector, {Selector} from './createSelector';
 import {State} from './createState';
-import deriveState from './deriveState';
 import filter from './filter';
 import isSelector from './isSelector';
 import isValueInRange, {ValueRange} from './isValueInRange';
@@ -28,7 +28,7 @@ export default function createFactory<K, V>(
 
   const valuesState = createMutableState(new Map<K, V>());
 
-  const factoryState = deriveState(
+  const factoryState = createProxyState(
     ({get}) => new Map(get(valuesState)),
     ({value: newValues, get, set}) => {
       const newKeys = new Set(newValues.keys());

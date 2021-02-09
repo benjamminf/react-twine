@@ -2,9 +2,9 @@ import createFactory, {
   FactoryFunction,
   FactoryProperties,
 } from './createFactory';
+import createProxyState from './createProxyState';
 import {Selector} from './createSelector';
 import createState, {InitialValue, State} from './createState';
-import deriveState from './deriveState';
 import isState from './isState';
 import {ValueRange} from './isValueInRange';
 import map from './map';
@@ -24,7 +24,7 @@ export default function createStateFactory<K, V>(
       : createState(initialValueOrState);
   }, keyRange);
 
-  const factoryState = deriveState(
+  const factoryState = createProxyState(
     ({get}) => map(get(proxyFactory), state => get(state)),
     ({value: values, set}) => {
       values.forEach((value, key) => set(proxyFactory(key), value));
