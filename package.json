@@ -1,6 +1,6 @@
 {
   "name": "react-twine",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/react-twine.cjs.js",
   "module": "dist/react-twine.esm.js",
