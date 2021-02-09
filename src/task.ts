@@ -3,7 +3,7 @@ export type Task = () => void;
 const completionTasks = new Map<any, Task>();
 let isCapturing = false;
 
-export function frameCapture(task: Task): void {
+export function taskCapture(task: Task): void {
   if (isCapturing) {
     task();
   } else {
@@ -17,7 +17,7 @@ export function frameCapture(task: Task): void {
   }
 }
 
-export function frameComplete(key: any, task: Task | null): void {
+export function taskComplete(key: any, task: Task | null): void {
   if (isCapturing) {
     if (task) {
       completionTasks.set(key, task);
@@ -29,6 +29,6 @@ export function frameComplete(key: any, task: Task | null): void {
   }
 }
 
-export function isFrameCapturing(): boolean {
+export function isTaskCapturing(): boolean {
   return isCapturing;
 }

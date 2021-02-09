@@ -1,5 +1,5 @@
 import bucket, {Bucket} from './bucket';
-import {frameComplete} from './frame';
+import {taskComplete} from './task';
 import generateID from './generateID';
 
 export type InitialValue<T> = T | (() => T);
@@ -47,7 +47,7 @@ export default function createState<T>(
     if (previous && next.value !== previous.value) {
       const currentObservers = Array.from(observers);
 
-      frameComplete(stateID, () =>
+      taskComplete(stateID, () =>
         currentObservers.forEach(observer =>
           observer(next.value, previous.value)
         )
