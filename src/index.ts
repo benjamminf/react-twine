@@ -15,6 +15,7 @@ export * from './createStateFactory';
 export {default as isSelector} from './isSelector';
 export {default as isState} from './isState';
 export * from './task';
+export {default as useAction} from './useAction';
 export {default as useAsyncSelector} from './useAsyncSelector';
 export {default as useAsyncState} from './useAsyncState';
 export {default as useSelector} from './useSelector';
