@@ -2,7 +2,7 @@ import createState, {
   GetValue,
   GetMethod,
   ObserveMethod,
-  Unobserve,
+  Unobserver,
   Observer,
 } from './createState';
 
@@ -29,7 +29,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
   const proxyState = createState<T | UninitializedValue>(UNINITIALIZED_VALUE);
   const {observers} = proxyState.observe;
   const dependencies = new Set<Selector<any>>();
-  const observed = new Set<Unobserve>();
+  const observed = new Set<Unobserver>();
   let isStale = true;
   let isObserved = false;
 

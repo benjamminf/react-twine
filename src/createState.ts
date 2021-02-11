@@ -11,9 +11,9 @@ export type SetValue<T> = T | ((value: T) => T);
 export type SetMethod<T> = (value: SetValue<T>) => void;
 
 export type Observer<T> = (value: T, oldValue: T) => void;
-export type Unobserve = () => void;
+export type Unobserver = () => void;
 export type Observers<T> = Set<Observer<T>>;
-export type ObserveMethod<T> = ((observer: Observer<T>) => Unobserve) & {
+export type ObserveMethod<T> = ((observer: Observer<T>) => Unobserver) & {
   observers: Observers<any>;
 };
 
@@ -55,7 +55,7 @@ export default function createState<T>(
     }
   }
 
-  function observe(observer: Observer<T>): Unobserve {
+  function observe(observer: Observer<T>): Unobserver {
     const wrappedObserver = (value: T, oldValue: T) =>
       observer(value, oldValue);
     observers.add(wrappedObserver);
