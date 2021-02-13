@@ -5,6 +5,7 @@ import createState, {
   Unobserver,
   Observer,
 } from './createState';
+import once from './once';
 
 export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
 export type Getter<T> = (context: {get: GetFunction}) => GetValue<T>;
@@ -27,11 +28,10 @@ function enforceValue<T>(value: T | UninitializedValue): T {
 
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
   const proxyState = createState<T | UninitializedValue>(UNINITIALIZED_VALUE);
-  const {observers} = proxyState.observe;
   const dependencies = new Set<Selector<any>>();
   const observed = new Set<Unobserver>();
   let isStale = true;
-  let isObserved = false;
+  let observerCount = 0;
 
   function getFunction<V>(selector: Selector<V>): V {
     if (!dependencies.has(selector)) {
@@ -48,7 +48,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     dependencies.clear();
     isStale = true;
 
-    if (isObserved) {
+    if (observerCount > 0) {
       computeValue();
     }
   }
@@ -68,20 +68,20 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
 
   function observe(observer: Observer<T>) {
     computeValue();
+    observerCount++;
 
-    isObserved = true;
     const unobserve = proxyState.observe((value, oldValue) =>
       observer(enforceValue(value), enforceValue(oldValue))
     );
 
-    return () => {
+    return once(() => {
       unobserve();
-      isObserved = observers.size > 0;
-    };
+      observerCount--;
+    });
   }
 
   return {
     get,
-    observe: Object.assign(observe, {observers}),
+    observe,
   };
 }

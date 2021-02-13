@@ -13,7 +13,6 @@ export default function createMutableState<T>(
   const proxyState = createState(() =>
     bucket(initialValue instanceof Function ? initialValue() : initialValue)
   );
-  const {observers} = proxyState.observe;
 
   function get(): T {
     return proxyState.get().value;
@@ -32,6 +31,6 @@ export default function createMutableState<T>(
   return {
     get,
     set,
-    observe: Object.assign(observe, {observers}),
+    observe,
   };
 }
