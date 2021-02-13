@@ -11,9 +11,7 @@ import resolveValue from './resolveValue';
 export default function createMutableState<T>(
   initialValue: InitialValue<T>
 ): State<T> {
-  const proxyState = createState(() =>
-    bucket(initialValue instanceof Function ? initialValue() : initialValue)
-  );
+  const proxyState = createState(() => bucket(resolveValue(initialValue)));
 
   function get(): T {
     return proxyState.get().value;

@@ -1,6 +1,7 @@
 import bucket, {Bucket} from './bucket';
 import {taskComplete} from './task';
 import generateID from './generateID';
+import resolveValue from './resolveValue';
 
 export type InitialValue<T> = T | (() => T);
 
@@ -29,16 +30,14 @@ export default function createState<T>(
   let current: Bucket<T> | null = null;
 
   function get(): T {
-    current =
-      current ??
-      bucket(initialValue instanceof Function ? initialValue() : initialValue);
+    current = current ?? bucket(resolveValue(initialValue));
 
     return current.value;
   }
 
   function set(value: SetValue<T>): void {
     const previous = observers.size > 0 ? bucket(get()) : null;
-    const next = bucket(value instanceof Function ? value(get()) : value);
+    const next = bucket(resolveValue(value, get));
 
     current = next;
 

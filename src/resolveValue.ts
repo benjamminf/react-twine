@@ -1,8 +1,16 @@
-import {GetMethod, SetValue} from './createState';
+import {GetMethod, InitialValue, SetValue} from './createState';
 
-export default function resolveValue<T>(
-  value: SetValue<T>,
-  get: GetMethod<T>
+function resolveValue<T>(value: InitialValue<T>): T;
+function resolveValue<T>(value: SetValue<T>, get: GetMethod<T>): T;
+function resolveValue<T>(
+  value: InitialValue<T> | SetValue<T>,
+  get?: GetMethod<T>
 ): T {
-  return value instanceof Function ? value(get()) : value;
+  return value instanceof Function
+    ? get
+      ? value(get())
+      : (value as () => T)()
+    : value;
 }
+
+export default resolveValue;
