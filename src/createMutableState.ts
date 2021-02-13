@@ -6,6 +6,7 @@ import createState, {
   State,
   Unobserver,
 } from './createState';
+import resolveValue from './resolveValue';
 
 export default function createMutableState<T>(
   initialValue: InitialValue<T>
@@ -19,7 +20,7 @@ export default function createMutableState<T>(
   }
 
   function set(value: SetValue<T>): void {
-    proxyState.set(bucket(value instanceof Function ? value(get()) : value));
+    proxyState.set(bucket(resolveValue(value, get)));
   }
 
   function observe(observer: Observer<T>): Unobserver {

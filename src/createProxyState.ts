@@ -1,6 +1,7 @@
 import {SetValue, State} from './createState';
 import createSelector, {Getter} from './createSelector';
 import createAction, {Setter} from './createAction';
+import resolveValue from './resolveValue';
 
 export default function createProxyState<T>(
   getter: Getter<T>,
@@ -8,16 +9,15 @@ export default function createProxyState<T>(
 ): State<T> {
   const proxySelector = createSelector(getter);
   const proxyAction = createAction(setter);
+  const {get, observe} = proxySelector;
 
   function set(value: SetValue<T>): void {
-    proxyAction.dispatch(
-      value instanceof Function ? value(proxySelector.get()) : value
-    );
+    proxyAction.dispatch(resolveValue(value, get));
   }
 
   return {
-    get: proxySelector.get,
+    get,
     set,
-    observe: proxySelector.observe,
+    observe,
   };
 }
