@@ -1,4 +1,4 @@
-import {Selector} from './createSelector';
+import {Selector} from './types';
 
 export default function isSelector<T>(obj: unknown): obj is Selector<T> {
   return (

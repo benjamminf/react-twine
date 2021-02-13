@@ -1,6 +1,6 @@
-import {SetValue, State} from './createState';
-import createSelector, {Getter} from './createSelector';
-import createAction, {Setter} from './createAction';
+import {Getter, Setter, SetValue, State} from './types';
+import createSelector from './createSelector';
+import createAction from './createAction';
 import resolveValue from './resolveValue';
 
 export default function createProxyState<T>(

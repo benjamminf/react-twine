@@ -1,11 +1,6 @@
+import {InitialValue, Observer, SetValue, State, Unobserver} from './types';
+import createState from './createState';
 import bucket from './bucket';
-import createState, {
-  InitialValue,
-  Observer,
-  SetValue,
-  State,
-  Unobserver,
-} from './createState';
 import resolveValue from './resolveValue';
 
 export default function createMutableState<T>(

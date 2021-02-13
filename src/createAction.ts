@@ -1,21 +1,5 @@
-import {SetValue, State} from './createState';
-import {GetFunction, Selector} from './createSelector';
+import {SetValue, Selector, State, Setter, Action} from './types';
 import {taskCapture, isTaskCapturing} from './task';
-
-export type SetFunction = <T>(state: State<T>, value: SetValue<T>) => void;
-export type Setter<T> = (context: {
-  value: T;
-  set: SetFunction;
-  get: GetFunction;
-  dispatch: DispatchFunction;
-}) => void;
-
-export type DispatchMethod<T> = (value: T) => void;
-export type DispatchFunction = <T>(action: Action<T>, value: T) => void;
-
-export type Action<T> = {
-  dispatch: DispatchMethod<T>;
-};
 
 function getFunction<T>(selector: Selector<T>): T {
   return selector.get();

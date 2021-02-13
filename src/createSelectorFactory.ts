@@ -1,15 +1,8 @@
-import createFactory, {
-  FactoryFunction,
-  FactoryProperties,
-} from './createFactory';
-import createSelector, {Getter, Selector} from './createSelector';
+import {Getter, Selector, SelectorFactory, ValueRange} from './types';
+import createFactory from './createFactory';
+import createSelector from './createSelector';
 import isSelector from './isSelector';
-import {ValueRange} from './isValueInRange';
 import map from './map';
-
-export type SelectorFactory<K, V> = FactoryFunction<K, Selector<V>> &
-  FactoryProperties<K> &
-  Selector<Map<K, V>>;
 
 export default function createSelectorFactory<K, V>(
   fn: (key: K) => Getter<V> | Selector<V>,

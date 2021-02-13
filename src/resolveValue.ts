@@ -1,4 +1,4 @@
-import {GetMethod, InitialValue, SetValue} from './createState';
+import {GetMethod, InitialValue, SetValue} from './types';
 
 function resolveValue<T>(value: InitialValue<T>): T;
 function resolveValue<T>(value: SetValue<T>, get: GetMethod<T>): T;

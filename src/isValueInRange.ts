@@ -1,4 +1,4 @@
-export type ValueRange<V> = Iterable<V> | ((value: V) => boolean);
+import {ValueRange} from './types';
 
 export default function isValueInRange<V>(
   value: V,

@@ -1,19 +1,12 @@
+import {Factory, Selector, ValueRange} from './types';
 import createAction from './createAction';
 import createMutableState from './createMutableState';
 import createProxyState from './createProxyState';
-import createSelector, {Selector} from './createSelector';
-import {State} from './createState';
+import createSelector from './createSelector';
 import filter from './filter';
 import isSelector from './isSelector';
-import isValueInRange, {ValueRange} from './isValueInRange';
+import isValueInRange from './isValueInRange';
 import shallowEqual from './shallowEqual';
-
-export type FactoryFunction<K, V> = (key: K) => V;
-export type FactoryProperties<K> = {keys: Selector<Set<K>>};
-
-export type Factory<K, V> = FactoryFunction<K, V> &
-  FactoryProperties<K> &
-  State<Map<K, V>>;
 
 export default function createFactory<K, V>(
   fn: (key: K) => V,

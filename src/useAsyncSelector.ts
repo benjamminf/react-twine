@@ -1,4 +1,4 @@
-import {Selector} from './createSelector';
+import {Selector} from './types';
 import useAsync from './useAsync';
 import useSelector from './useSelector';
 

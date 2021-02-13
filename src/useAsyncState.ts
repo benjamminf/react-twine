@@ -1,5 +1,5 @@
+import {SetMethod, State} from './types';
 import {useCallback} from 'react';
-import {SetMethod, State} from './createState';
 import useAsync from './useAsync';
 import useSharedState from './useSharedState';
 

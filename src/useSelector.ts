@@ -1,5 +1,5 @@
+import {Selector} from './types';
 import {useEffect, useState} from 'react';
-import {Selector} from './createSelector';
 
 export default function useSelector<T>(sharedSelector: Selector<T>): T {
   const value = sharedSelector.get();

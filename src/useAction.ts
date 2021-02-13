@@ -1,5 +1,5 @@
+import {Action, DispatchMethod} from './types';
 import {useCallback} from 'react';
-import {Action, DispatchMethod} from './createAction';
 
 function useAction<T>(action: Action<T>): DispatchMethod<T>;
 function useAction<T, A extends any[] = []>(

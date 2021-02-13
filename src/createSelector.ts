@@ -1,19 +1,6 @@
-import createState, {
-  GetValue,
-  GetMethod,
-  ObserveMethod,
-  Unobserver,
-  Observer,
-} from './createState';
+import {Unobserver, Observer, Getter, Selector} from './types';
+import createState from './createState';
 import once from './once';
-
-export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
-export type Getter<T> = (context: {get: GetFunction}) => GetValue<T>;
-
-export type Selector<T> = {
-  get: GetMethod<T>;
-  observe: ObserveMethod<T>;
-};
 
 const UNINITIALIZED_VALUE = Symbol('Uninitialized value');
 type UninitializedValue = typeof UNINITIALIZED_VALUE;

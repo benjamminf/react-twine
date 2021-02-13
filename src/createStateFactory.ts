@@ -1,17 +1,9 @@
-import createFactory, {
-  FactoryFunction,
-  FactoryProperties,
-} from './createFactory';
+import {InitialValue, Selector, State, StateFactory, ValueRange} from './types';
+import createFactory from './createFactory';
 import createProxyState from './createProxyState';
-import {Selector} from './createSelector';
-import createState, {InitialValue, State} from './createState';
+import createState from './createState';
 import isState from './isState';
-import {ValueRange} from './isValueInRange';
 import map from './map';
-
-export type StateFactory<K, V> = FactoryFunction<K, State<V>> &
-  FactoryProperties<K> &
-  State<Map<K, V>>;
 
 export default function createStateFactory<K, V>(
   fn: (key: K) => InitialValue<V> | State<V>,

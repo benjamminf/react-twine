@@ -1,26 +1,15 @@
+import {
+  InitialValue,
+  Observer,
+  Observers,
+  SetValue,
+  State,
+  Unobserver,
+} from './types';
 import bucket, {Bucket} from './bucket';
 import {taskComplete} from './task';
 import generateID from './generateID';
 import resolveValue from './resolveValue';
-
-export type InitialValue<T> = T | (() => T);
-
-export type GetValue<T> = T;
-export type GetMethod<T> = () => GetValue<T>;
-
-export type SetValue<T> = T | ((value: T) => T);
-export type SetMethod<T> = (value: SetValue<T>) => void;
-
-export type Observer<T> = (value: T, oldValue: T) => void;
-export type Unobserver = () => void;
-export type Observers<T> = Set<Observer<T>>;
-export type ObserveMethod<T> = (observer: Observer<T>) => Unobserver;
-
-export type State<T> = {
-  get: GetMethod<T>;
-  set: SetMethod<T>;
-  observe: ObserveMethod<T>;
-};
 
 export default function createState<T>(
   initialValue: InitialValue<T>
