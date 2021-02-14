@@ -1,5 +1,5 @@
 import {SetValue, Selector, State, Setter, Action} from './types';
-import {taskCapture, isTaskCapturing} from './task';
+import {captureTasks, isTaskCapturing} from './tasks';
 
 function getFunction<T>(selector: Selector<T>): T {
   return selector.get();
@@ -19,7 +19,7 @@ function dispatchFunction<T>(action: Action<T>, value: T): void {
 
 export default function createAction<T = void>(setter: Setter<T>): Action<T> {
   function dispatch(value: T): void {
-    taskCapture(() =>
+    captureTasks(() =>
       setter({
         value,
         get: getFunction,

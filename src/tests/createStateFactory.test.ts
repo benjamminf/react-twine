@@ -2,7 +2,7 @@ import bucket from '../bucket';
 import createStateFactory from '../createStateFactory';
 import createState from '../createState';
 import {mockFn} from './testUtils';
-import {taskCapture} from '../task';
+import {captureTasks} from '../tasks';
 
 describe('createStateFactory()', () => {
   describe('when fetching', () => {
@@ -81,7 +81,7 @@ describe('createStateFactory()', () => {
       const factory = createStateFactory((key: number) => `item${key}`);
       const observer = mockFn();
       factory.observe(observer);
-      taskCapture(() => {
+      captureTasks(() => {
         factory(1);
         factory(2).set('new2');
       });

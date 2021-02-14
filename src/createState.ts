@@ -7,7 +7,7 @@ import {
   Unobserver,
 } from './types';
 import bucket, {Bucket} from './bucket';
-import {taskComplete} from './task';
+import {queueTask} from './tasks';
 import generateID from './generateID';
 import resolveValue from './resolveValue';
 
@@ -33,7 +33,7 @@ export default function createState<T>(
 
     current = next;
 
-    taskComplete(
+    queueTask(
       stateID,
       previous && next.value !== previous.value
         ? () => {

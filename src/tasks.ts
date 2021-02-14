@@ -3,7 +3,7 @@ export type Task = () => void;
 const completionTasks = new Map<any, Task>();
 let isCapturing = false;
 
-export function taskCapture(task: Task): void {
+export function captureTasks(task: Task): void {
   if (isCapturing) {
     task();
   } else {
@@ -17,8 +17,8 @@ export function taskCapture(task: Task): void {
   }
 }
 
-function taskComplete(key: any, task: Task | null): void {
-  taskCapture(() => {
+function queueTask(key: any, task: Task | null): void {
+  captureTasks(() => {
     completionTasks.delete(key);
 
     if (task) {
@@ -27,7 +27,7 @@ function taskComplete(key: any, task: Task | null): void {
   });
 }
 
-export {taskComplete};
+export {queueTask};
 
 export function isTaskCapturing(): boolean {
   return isCapturing;

@@ -1,7 +1,7 @@
 import {Unobserver, Observer, Getter, Selector} from './types';
 import createState from './createState';
 import once from './once';
-import {taskComplete} from './task';
+import {queueTask} from './tasks';
 import generateID from './generateID';
 
 const UNINITIALIZED_VALUE = Symbol('Uninitialized value');
@@ -38,7 +38,7 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     dependencies.clear();
     isStale = true;
 
-    taskComplete(selectorID, completeObserveDependent);
+    queueTask(selectorID, completeObserveDependent);
   }
 
   function completeObserveDependent(): void {
