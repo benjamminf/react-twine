@@ -1,3 +1,4 @@
+import createAction from '../createAction';
 import createState from '../createState';
 import {mockFn} from './testUtils';
 
@@ -234,6 +235,33 @@ describe('createState()', () => {
         expect(observer).not.toBeCalled();
         state.set(2);
         expect(observer).toBeCalledTimes(3);
+      });
+
+      test('should use previously observed value with multiple sets in action', () => {
+        const initialValue = mockFn(() => 1);
+        const state = createState(initialValue);
+        const increment = (value: number) => value + 1;
+        const action = createAction(({set}) => {
+          set(state, increment);
+          set(state, increment);
+          set(state, increment);
+        });
+        const observer1 = mockFn((value, lastValue) => {
+          expect(value).toBe(4);
+          expect(lastValue).toBe(1);
+        });
+        const unobserve1 = state.observe(observer1);
+        action.dispatch();
+        unobserve1();
+        expect(observer1).toBeCalledTimes(1);
+        const observer2 = mockFn((value, lastValue) => {
+          expect(value).toBe(7);
+          expect(lastValue).toBe(4);
+        });
+        state.observe(observer2);
+        action.dispatch();
+        expect(observer2).toBeCalledTimes(1);
+        expect(initialValue).toBeCalledTimes(1);
       });
     });
 
