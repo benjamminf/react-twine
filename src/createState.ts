@@ -37,8 +37,9 @@ export default function createState<T>(
       stateID,
       previous && next.value !== previous.value
         ? () => {
-            Array.from(observers).forEach(observer =>
-              observer(next.value, previous.value)
+            Array.from(observers).forEach(
+              observer =>
+                observers.has(observer) && observer(next.value, previous.value)
             );
             past = current;
           }

@@ -1,6 +1,8 @@
 import {Unobserver, Observer, Getter, Selector} from './types';
 import createState from './createState';
 import once from './once';
+import {taskComplete} from './task';
+import generateID from './generateID';
 
 const UNINITIALIZED_VALUE = Symbol('Uninitialized value');
 type UninitializedValue = typeof UNINITIALIZED_VALUE;
@@ -14,6 +16,7 @@ function enforceValue<T>(value: T | UninitializedValue): T {
 }
 
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
+  const selectorID = generateID();
   const proxyState = createState<T | UninitializedValue>(UNINITIALIZED_VALUE);
   const dependencies = new Set<Selector<any>>();
   const observed = new Set<Unobserver>();
@@ -35,6 +38,10 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     dependencies.clear();
     isStale = true;
 
+    taskComplete(selectorID, completeObserveDependent);
+  }
+
+  function completeObserveDependent(): void {
     if (observerCount > 0) {
       computeValue();
     }

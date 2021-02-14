@@ -17,17 +17,17 @@ export function taskCapture(task: Task): void {
   }
 }
 
-export function taskComplete(key: any, task: Task | null): void {
-  if (isCapturing) {
+function taskComplete(key: any, task: Task | null): void {
+  taskCapture(() => {
+    completionTasks.delete(key);
+
     if (task) {
       completionTasks.set(key, task);
-    } else {
-      completionTasks.delete(key);
     }
-  } else {
-    task?.();
-  }
+  });
 }
+
+export {taskComplete};
 
 export function isTaskCapturing(): boolean {
   return isCapturing;
