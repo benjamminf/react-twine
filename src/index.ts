@@ -7,6 +7,7 @@ export {default as createSelector} from './createSelector';
 export {default as createSelectorFactory} from './createSelectorFactory';
 export {default as createState} from './createState';
 export {default as createStateFactory} from './createStateFactory';
+export {default as isAction} from './isAction';
 export {default as isSelector} from './isSelector';
 export {default as isState} from './isState';
 export {default as useAction} from './useAction';
