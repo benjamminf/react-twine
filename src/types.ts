@@ -2,7 +2,7 @@ export type InitialValue<T> = T | (() => T);
 
 export type GetValue<T> = T;
 export type GetMethod<T> = () => GetValue<T>;
-export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
+export type GetFunction = <T>(observable: Observable<T>) => GetValue<T>;
 
 export type SetValue<T> = T | ((value: T) => T);
 export type SetMethod<T> = (value: SetValue<T>) => void;
@@ -16,6 +16,8 @@ export type Unobserver = () => void;
 export type Observers<T> = Set<Observer<T>>;
 export type ObserveMethod<T> = (observer: Observer<T>) => Unobserver;
 
+export type StatesMethod = () => Set<State<any>>;
+
 export type Getter<T> = (context: {get: GetFunction}) => GetValue<T>;
 export type Setter<T> = (context: {
   value: T;
@@ -24,17 +26,21 @@ export type Setter<T> = (context: {
   dispatch: DispatchFunction;
 }) => void;
 
-export type Selector<T> = {
+export type Observable<T> = {
   get: GetMethod<T>;
   observe: ObserveMethod<T>;
 };
 
-export type Action<T> = {
-  dispatch: DispatchMethod<T>;
+export type State<T> = Observable<T> & {
+  set: SetMethod<T>;
 };
 
-export type State<T> = Selector<T> & {
-  set: SetMethod<T>;
+export type Selector<T> = Observable<T> & {
+  states: StatesMethod;
+};
+
+export type Action<T> = {
+  dispatch: DispatchMethod<T>;
 };
 
 export type FactoryFunction<K, V> = (key: K) => V;

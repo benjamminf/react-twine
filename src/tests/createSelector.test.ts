@@ -1,6 +1,7 @@
 import createAction from '../createAction';
 import createSelector from '../createSelector';
 import createState from '../createState';
+import {Selector} from '../types';
 import {mockFn} from './testUtils';
 
 describe('createSelector()', () => {
@@ -77,6 +78,49 @@ describe('createSelector()', () => {
       expect(selector3.get()).toBe(2);
       state2.set(3);
       expect(selector3.get()).toBe(1);
+    });
+
+    test('should execute getters the least amount of times required', () => {
+      const state = createState(1);
+      const getter1 = mockFn(({get}) => get(state) * 2);
+      const selector1 = createSelector(getter1);
+      const getter2 = mockFn(({get}) => get(selector1) * 2);
+      const selector2 = createSelector(getter2);
+      const getter3 = mockFn(({get}) => get(selector2) * 2);
+      const selector3 = createSelector(getter3);
+      expect(getter1).toBeCalledTimes(0);
+      expect(getter2).toBeCalledTimes(0);
+      expect(getter3).toBeCalledTimes(0);
+      selector3.get();
+      state.set(2);
+      // TODO FAILING TEST
+      expect(getter1).toBeCalledTimes(1);
+      expect(getter2).toBeCalledTimes(1);
+      expect(getter3).toBeCalledTimes(1);
+      selector3.get();
+      expect(getter1).toBeCalledTimes(2);
+      expect(getter2).toBeCalledTimes(2);
+      expect(getter3).toBeCalledTimes(2);
+    });
+
+    test('should throw error when recursively selecting itself', () => {
+      const selector: Selector<any> = createSelector(({get}) => get(selector));
+      expect(selector.get).toThrowError();
+    });
+
+    test('should throw error with a circular dependency', () => {
+      const selector1: Selector<any> = createSelector(({get}) =>
+        get(selector3)
+      );
+      const selector2: Selector<any> = createSelector(({get}) =>
+        get(selector1)
+      );
+      const selector3: Selector<any> = createSelector(({get}) =>
+        get(selector2)
+      );
+      expect(selector1.get).toThrowError();
+      expect(selector2.get).toThrowError();
+      expect(selector3.get).toThrowError();
     });
   });
 
@@ -242,7 +286,7 @@ describe('createSelector()', () => {
       expect(observer).toBeCalledTimes(1);
     });
 
-    test('should execute thrice after double observe with double dependent state change and dependent selector recomputation', () => {
+    test('should only execute twice after double observe with double dependent state change and dependent selector recomputation', () => {
       const state = createState(1);
       const getter1 = mockFn(({get}) => get(state) * 2);
       const selector1 = createSelector(getter1);
@@ -257,12 +301,12 @@ describe('createSelector()', () => {
       expect(selector1.get()).toBe(4);
       expect(selector2.get()).toBe(6);
       expect(getter1).toBeCalledTimes(2);
-      expect(getter2).toBeCalledTimes(3);
+      expect(getter2).toBeCalledTimes(2);
       expect(observer1).toBeCalledTimes(1);
       expect(observer2).toBeCalledTimes(1);
     });
 
-    test('should execute thrice after observe with dependent state change and conditionally dependent selector recomputation', () => {
+    test('should only execute twice after observe with dependent state change and conditionally dependent selector recomputation', () => {
       const state = createState(1);
       const getter1 = mockFn(({get}) => get(state) * 2);
       const observer1 = mockFn();
@@ -279,7 +323,7 @@ describe('createSelector()', () => {
       expect(selector1.get()).toBe(4);
       expect(selector2.get()).toBe(8);
       expect(getter1).toBeCalledTimes(2);
-      expect(getter2).toBeCalledTimes(3);
+      expect(getter2).toBeCalledTimes(2);
       expect(observer1).toBeCalledTimes(1);
       expect(observer2).toBeCalledTimes(1);
     });
@@ -306,7 +350,7 @@ describe('createSelector()', () => {
       expect(observer2).toBeCalledTimes(1);
     });
 
-    test('should max execute thrice after all observe with all dependent state change and all dependent selector recomputation', () => {
+    test('should only execute twice after all observe with all dependent state change and all dependent selector recomputation', () => {
       const state = createState(1);
       const getter1 = mockFn(({get}) => get(state));
       const selector1 = createSelector(getter1);
@@ -332,9 +376,9 @@ describe('createSelector()', () => {
       expect(selector3.get()).toBe(8);
       expect(selector4.get()).toBe(16);
       expect(getter1).toBeCalledTimes(2);
-      expect(getter2).toBeCalledTimes(3);
-      expect(getter3).toBeCalledTimes(3);
-      expect(getter4).toBeCalledTimes(3);
+      expect(getter2).toBeCalledTimes(2);
+      expect(getter3).toBeCalledTimes(2);
+      expect(getter4).toBeCalledTimes(2);
       expect(observer).toBeCalledTimes(4);
     });
   });

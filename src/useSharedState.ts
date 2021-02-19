@@ -1,8 +1,8 @@
 import {State, SetMethod} from './types';
-import useSelector from './useSelector';
+import useValue from './useValue';
 
 export default function useSharedState<T>(state: State<T>): [T, SetMethod<T>] {
-  const value = useSelector(state);
+  const value = useValue(state);
 
   return [value, state.set];
 }

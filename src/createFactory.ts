@@ -1,21 +1,21 @@
-import {Factory, Selector, ValueRange} from './types';
+import {Factory, Observable, ValueRange} from './types';
 import createAction from './createAction';
 import createMutableState from './createMutableState';
 import createProxyState from './createProxyState';
 import createSelector from './createSelector';
 import filter from './filter';
-import isSelector from './isSelector';
 import isValueInRange from './isValueInRange';
 import shallowEqual from './shallowEqual';
+import isObservable from './isObservable';
 
 export default function createFactory<K, V>(
   fn: (key: K) => V,
-  keyRange: ValueRange<K> | Selector<ValueRange<K>> = () => true
+  keyRange: ValueRange<K> | Observable<ValueRange<K>> = () => true
 ): Factory<K, V> {
   const keysState = createMutableState(new Set<K>());
   const keysSelector = createSelector(({get}) => new Set(get(keysState)));
 
-  const keyRangeSelector = isSelector<ValueRange<K>>(keyRange)
+  const keyRangeObservable = isObservable<ValueRange<K>>(keyRange)
     ? keyRange
     : createSelector(() => keyRange);
 
@@ -61,14 +61,14 @@ export default function createFactory<K, V>(
     );
   });
 
-  keyRangeSelector.observe(range => {
+  keyRangeObservable.observe(range => {
     const allKeys = keysState.get();
     const deleteKeys = filter(allKeys, key => !isValueInRange(key, range));
     deleteAction.dispatch(deleteKeys);
   });
 
   function factory(key: K): V {
-    if (!isValueInRange(key, keyRangeSelector.get())) {
+    if (!isValueInRange(key, keyRangeObservable.get())) {
       throw new RangeError(`Factory key "${key}" is out of bounds`);
     }
 

@@ -22,7 +22,7 @@ const incrementAction = createAction(({value, set}) =>
 );
 
 function Counter() {
-  const count = useSelector(counterState);
+  const count = useValue(counterState);
   const increment = useAction(incrementAction, 1);
 
   return <button onClick={increment}>{count}</button>;
@@ -37,7 +37,7 @@ const counterDoubleSelector = createSelector(({get}) => get(counterState) * 2);
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
-  const countDouble = useSelector(counterDoubleSelector);
+  const countDouble = useValue(counterDoubleSelector);
   const increment = () => setCounter(count + 1);
 
   return (
@@ -78,7 +78,7 @@ function Counter() {
 const itemStates = createStateFactory(key => `Item ${key}`);
 
 function Item(props) {
-  const item = useSelector(itemStates(props.itemKey));
+  const item = useValue(itemStates(props.itemKey));
 
   return <p>This item: {item}</p>;
 }
@@ -112,7 +112,7 @@ const counterDoubleSelector = createSelector(async ({get}) => {
 
 function Counter() {
   const [count, setCounter] = useSharedState(counterState);
-  const [countDouble] = useAsyncSelector(counterDoubleSelector);
+  const [countDouble] = useAsyncValue(counterDoubleSelector);
   const increment = () => setCounter(count + 1);
 
   return (

@@ -1,6 +1,6 @@
 import {State} from './types';
-import isSelector from './isSelector';
+import isObservable from './isObservable';
 
 export default function isState<T>(obj: unknown): obj is State<T> {
-  return isSelector(obj) && typeof (obj as State<T>).set === 'function';
+  return isObservable(obj) && typeof (obj as State<T>).set === 'function';
 }

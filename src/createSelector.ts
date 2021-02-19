@@ -1,8 +1,16 @@
-import {Unobserver, Observer, Getter, Selector} from './types';
+import {
+  Unobserver,
+  Observer,
+  Getter,
+  Observable,
+  Selector,
+  State,
+} from './types';
 import createState from './createState';
 import once from './once';
 import {queueTask} from './tasks';
 import generateID from './generateID';
+import isSelector from './isSelector';
 
 const UNINITIALIZED_VALUE = Symbol('Uninitialized value');
 type UninitializedValue = typeof UNINITIALIZED_VALUE;
@@ -18,23 +26,33 @@ function enforceValue<T>(value: T | UninitializedValue): T {
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
   const selectorID = generateID();
   const proxyState = createState<T | UninitializedValue>(UNINITIALIZED_VALUE);
-  const dependencies = new Set<Selector<any>>();
-  const observed = new Set<Unobserver>();
+  const dependencies = new Set<Observable<any>>();
+  const observing = new Map<State<any>, Unobserver>();
   let isStale = true;
+  let isComputing = false;
   let observerCount = 0;
 
-  function getFunction<V>(selector: Selector<V>): V {
-    if (!dependencies.has(selector)) {
-      dependencies.add(selector);
-      observed.add(selector.observe(observeDependent));
+  function getFunction<V>(observable: Observable<V>): V {
+    const value = observable.get();
+
+    if (!dependencies.has(observable)) {
+      dependencies.add(observable);
+
+      Array.from(
+        isSelector(observable) ? observable.states() : [observable as State<V>]
+      )
+        .filter(state => !observing.has(state))
+        .forEach((state: State<any>) => {
+          observing.set(state, state.observe(observeDependent));
+        });
     }
 
-    return selector.get();
+    return value;
   }
 
   function observeDependent(): void {
-    observed.forEach(unobserve => unobserve());
-    observed.clear();
+    observing.forEach(unobserver => unobserver());
+    observing.clear();
     dependencies.clear();
     isStale = true;
 
@@ -49,7 +67,13 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
 
   function computeValue(): void {
     if (isStale) {
+      if (isComputing) {
+        throw new Error('Circular dependency detected');
+      }
+
+      isComputing = true;
       proxyState.set(() => getter({get: getFunction}));
+      isComputing = false;
       isStale = false;
     }
   }
@@ -64,18 +88,23 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     computeValue();
     observerCount++;
 
-    const unobserve = proxyState.observe((value, oldValue) =>
+    const unobserver = proxyState.observe((value, oldValue) =>
       observer(enforceValue(value), enforceValue(oldValue))
     );
 
     return once(() => {
-      unobserve();
+      unobserver();
       observerCount--;
     });
+  }
+
+  function states(): Set<State<any>> {
+    return new Set(observing.keys());
   }
 
   return {
     get,
     observe,
+    states,
   };
 }
