@@ -17,7 +17,7 @@ export function captureTasks(task: Task): void {
   }
 }
 
-function queueTask(key: any, task: Task | null): void {
+export function queueTask(key: any, task: Task | null): void {
   captureTasks(() => {
     completionTasks.delete(key);
 
@@ -26,8 +26,6 @@ function queueTask(key: any, task: Task | null): void {
     }
   });
 }
-
-export {queueTask};
 
 export function isTaskCapturing(): boolean {
   return isCapturing;

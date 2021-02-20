@@ -2,15 +2,19 @@ import {
   Unobserver,
   Observer,
   Getter,
-  Observable,
   Selector,
-  State,
+  GetMethod,
+  ObserveMethod,
 } from './types';
 import createState from './createState';
 import once from './once';
 import {queueTask} from './tasks';
 import generateID from './generateID';
-import isSelector from './isSelector';
+import {
+  handleInternalObserver,
+  internallyObserve,
+  isInternallyObserving,
+} from './internalObserver';
 
 const UNINITIALIZED_VALUE = Symbol('Uninitialized value');
 type UninitializedValue = typeof UNINITIALIZED_VALUE;
@@ -26,28 +30,31 @@ function enforceValue<T>(value: T | UninitializedValue): T {
 export default function createSelector<T>(getter: Getter<T>): Selector<T> {
   const selectorID = generateID();
   const proxyState = createState<T | UninitializedValue>(UNINITIALIZED_VALUE);
-  const dependencies = new Set<Observable<any>>();
-  const observing = new Map<State<any>, Unobserver>();
+  const dependencies = new Set<GetMethod<any>>();
+  const observing = new Map<ObserveMethod<any>, Unobserver>();
   let isStale = true;
   let isComputing = false;
   let observerCount = 0;
 
-  function getFunction<V>(observable: Observable<V>): V {
-    const value = observable.get();
-
-    if (!dependencies.has(observable)) {
-      dependencies.add(observable);
-
-      Array.from(
-        isSelector(observable) ? observable.states() : [observable as State<V>]
-      )
-        .filter(state => !observing.has(state))
-        .forEach((state: State<any>) => {
-          observing.set(state, state.observe(observeDependent));
-        });
+  function getFunction<V>(selector: Selector<V>): V {
+    if (!dependencies.has(selector.get)) {
+      dependencies.add(selector.get);
+      observing.set(
+        selector.observe,
+        internallyObserve(selector.observe, observeDependent, observingHandler)
+      );
     }
 
-    return value;
+    return selector.get();
+  }
+
+  function observingHandler(
+    internalObserve: ObserveMethod<any>,
+    internalObserver: Observer<any>
+  ): void {
+    if (!observing.has(internalObserve)) {
+      observing.set(internalObserve, internalObserve(internalObserver));
+    }
   }
 
   function observeDependent(): void {
@@ -84,8 +91,13 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     return enforceValue(proxyState.get());
   }
 
-  function observe(observer: Observer<T>) {
+  function observe(observer: Observer<T>): Unobserver {
     computeValue();
+
+    if (isInternallyObserving()) {
+      return handleInternalObserver(new Set(observing.keys()), observer);
+    }
+
     observerCount++;
 
     const unobserver = proxyState.observe((value, oldValue) =>
@@ -98,13 +110,8 @@ export default function createSelector<T>(getter: Getter<T>): Selector<T> {
     });
   }
 
-  function states(): Set<State<any>> {
-    return new Set(observing.keys());
-  }
-
   return {
     get,
     observe,
-    states,
   };
 }

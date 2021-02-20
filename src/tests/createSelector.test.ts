@@ -93,7 +93,6 @@ describe('createSelector()', () => {
       expect(getter3).toBeCalledTimes(0);
       selector3.get();
       state.set(2);
-      // TODO FAILING TEST
       expect(getter1).toBeCalledTimes(1);
       expect(getter2).toBeCalledTimes(1);
       expect(getter3).toBeCalledTimes(1);

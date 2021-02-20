@@ -9,7 +9,7 @@ export default function createProxyState<T>(
 ): State<T> & Selector<T> {
   const proxySelector = createSelector(getter);
   const proxyAction = createAction(setter);
-  const {get, observe, states} = proxySelector;
+  const {get, observe} = proxySelector;
 
   function set(value: SetValue<T>): void {
     proxyAction.dispatch(resolveValue(value, get));
@@ -19,6 +19,5 @@ export default function createProxyState<T>(
     get,
     set,
     observe,
-    states,
   };
 }

@@ -1,8 +1,8 @@
-import {SetValue, Observable, State, Setter, Action} from './types';
+import {SetValue, Selector, State, Setter, Action} from './types';
 import {captureTasks, isTaskCapturing} from './tasks';
 
-function getFunction<T>(observable: Observable<T>): T {
-  return observable.get();
+function getFunction<T>(selector: Selector<T>): T {
+  return selector.get();
 }
 
 function setFunction<T>(state: State<T>, value: SetValue<T>): void {

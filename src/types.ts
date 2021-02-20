@@ -2,7 +2,7 @@ export type InitialValue<T> = T | (() => T);
 
 export type GetValue<T> = T;
 export type GetMethod<T> = () => GetValue<T>;
-export type GetFunction = <T>(observable: Observable<T>) => GetValue<T>;
+export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
 
 export type SetValue<T> = T | ((value: T) => T);
 export type SetMethod<T> = (value: SetValue<T>) => void;
@@ -26,17 +26,13 @@ export type Setter<T> = (context: {
   dispatch: DispatchFunction;
 }) => void;
 
-export type Observable<T> = {
+export type Selector<T> = {
   get: GetMethod<T>;
   observe: ObserveMethod<T>;
 };
 
-export type State<T> = Observable<T> & {
+export type State<T> = Selector<T> & {
   set: SetMethod<T>;
-};
-
-export type Selector<T> = Observable<T> & {
-  states: StatesMethod;
 };
 
 export type Action<T> = {
