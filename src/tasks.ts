@@ -7,13 +7,14 @@ export function captureTasks(task: Task): void {
   if (isCapturing) {
     task();
   } else {
-    isCapturing = true;
-
-    task();
-    completionTasks.forEach(task => task());
-    completionTasks.clear();
-
-    isCapturing = false;
+    try {
+      isCapturing = true;
+      task();
+      completionTasks.forEach(task => task());
+    } finally {
+      completionTasks.clear();
+      isCapturing = false;
+    }
   }
 }
 
