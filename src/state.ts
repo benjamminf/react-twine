@@ -8,8 +8,9 @@ import {
   Box,
   SelectorCreator,
 } from './types';
-import { resolveValue } from './resolveValue';
+import { resolveValue } from './value';
 import { box, unbox } from './box';
+import { isSelector } from './selector';
 
 export function bootstrapState({
   dependencyStore,
@@ -47,4 +48,8 @@ export function bootstrapState({
       set,
     };
   };
+}
+
+export function isState<T>(obj: unknown): obj is State<T> {
+  return isSelector(obj) && typeof (obj as State<T>).set === 'function';
 }

@@ -1,4 +1,4 @@
-import { resolveValue } from './resolveValue';
+import { resolveValue } from './value';
 import {
   ActionCreator,
   Getter,

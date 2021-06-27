@@ -1,6 +1,6 @@
 import { Factory, Selector, ValueRange } from './types';
-import { isSelector } from './isSelector';
-import { isValueInRange } from './isValueInRange';
+import { isSelector } from './selector';
+import { isValueInRange } from './value';
 
 export function createFactory<K, V>(
   resolver: (key: K) => V,
