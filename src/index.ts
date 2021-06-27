@@ -1,17 +1,32 @@
-export * from './types';
-export {default as createAction} from './createAction';
-export {default as createFactory} from './createFactory';
-export {default as createMutableState} from './createMutableState';
-export {default as createProxyState} from './createProxyState';
-export {default as createSelector} from './createSelector';
-export {default as createSelectorFactory} from './createSelectorFactory';
-export {default as createState} from './createState';
-export {default as createStateFactory} from './createStateFactory';
-export {default as isAction} from './isAction';
-export {default as isSelector} from './isSelector';
-export {default as isState} from './isState';
-export {default as useAction} from './useAction';
-export {default as useAsyncState} from './useAsyncState';
-export {default as useAsyncValue} from './useAsyncValue';
-export {default as useSharedState} from './useSharedState';
-export {default as useValue} from './useValue';
+import { bootstrapAction } from './action';
+import { createDependencyStore } from './dependencyStore';
+import { bootstrapProxyState } from './proxyState';
+import { bootstrapSelector } from './selector';
+import { bootstrapState } from './state';
+import { createTransactor } from './transactor';
+import {
+  ActionCreator,
+  ProxyStateCreator,
+  SelectorCreator,
+  StateCreator,
+} from './types';
+
+export function bootstrap(): {
+  createAction: ActionCreator;
+  createProxyState: ProxyStateCreator;
+  createSelector: SelectorCreator;
+  createState: StateCreator;
+} {
+  const dependencyStore = createDependencyStore();
+  const transactor = createTransactor();
+
+  const createAction = bootstrapAction({ transactor });
+  const createSelector = bootstrapSelector({ dependencyStore, transactor });
+  const createState = bootstrapState({ dependencyStore, createSelector });
+  const createProxyState = bootstrapProxyState({
+    createAction,
+    createSelector,
+  });
+
+  return { createAction, createProxyState, createSelector, createState };
+}

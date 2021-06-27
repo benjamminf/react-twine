@@ -1,16 +1,14 @@
-import {GetMethod, InitialValue, SetValue} from './types';
+import { InitialValue, SetValue } from './types';
 
-function resolveValue<T>(value: InitialValue<T>): T;
-function resolveValue<T>(value: SetValue<T>, get: GetMethod<T>): T;
-function resolveValue<T>(
-  value: InitialValue<T> | SetValue<T>,
-  get?: GetMethod<T>
-): T {
+export function resolveValue<V>(value: InitialValue<V>): V;
+export function resolveValue<V>(value: SetValue<V>, get: () => V): V;
+export function resolveValue<V>(
+  value: InitialValue<V> | SetValue<V>,
+  get?: () => V,
+): V {
   return value instanceof Function
     ? get
       ? value(get())
-      : (value as () => T)()
+      : (value as () => V)()
     : value;
 }
-
-export default resolveValue;

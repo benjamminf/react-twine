@@ -1,10 +1,12 @@
-import {Selector} from './types';
+import { Selector } from './types';
 
-export default function isSelector<T>(obj: unknown): obj is Selector<T> {
+export function isSelector<T>(obj: unknown): obj is Selector<T> {
   return (
     typeof obj === 'object' &&
     obj != null &&
-    (obj as Selector<T>).get instanceof Function &&
-    (obj as Selector<T>).observe instanceof Function
+    typeof (obj as Selector<T>).key === 'symbol' &&
+    typeof (obj as Selector<T>).get === 'function' &&
+    typeof (obj as Selector<T>).observe === 'function' &&
+    typeof (obj as Selector<T>).effect === 'function'
   );
 }

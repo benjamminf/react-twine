@@ -1,57 +1,78 @@
 export type InitialValue<T> = T | (() => T);
 
 export type GetValue<T> = T;
-export type GetMethod<T> = () => GetValue<T>;
-export type GetFunction = <T>(selector: Selector<T>) => GetValue<T>;
 
 export type SetValue<T> = T | ((value: T) => T);
-export type SetMethod<T> = (value: SetValue<T>) => void;
-export type SetFunction = <T>(state: State<T>, value: SetValue<T>) => void;
 
-export type DispatchMethod<T> = (value: T) => void;
-export type DispatchFunction = <T>(action: Action<T>, value: T) => void;
-
-export type Observer<T> = (value: T, oldValue: T) => void;
+export type Observer<T> = (value: T, oldValue?: T) => void;
 export type Unobserver = () => void;
-export type Observers<T> = Set<Observer<T>>;
-export type ObserveMethod<T> = (observer: Observer<T>) => Unobserver;
 
-export type StatesMethod = () => Set<State<any>>;
+export type Cleanup = () => void;
+export type Effect = () => Cleanup | void;
+export type Uneffect = () => void;
 
-export type Getter<T> = (context: {get: GetFunction}) => GetValue<T>;
-export type Setter<T> = (context: {
-  value: T;
-  set: SetFunction;
-  get: GetFunction;
-  dispatch: DispatchFunction;
-}) => void;
+export type GetterContext = {
+  get<V>(selector: Selector<V>): GetValue<V>;
+};
+
+export type Getter<T> = (context: GetterContext) => GetValue<T>;
+
+export type SetterContext = GetterContext & {
+  set<V>(state: State<V>, value: SetValue<V>): void;
+  dispatch<V>(action: Action<V>, value: V): void;
+};
+
+export type Setter<T> = (context: SetterContext, value: T) => void;
 
 export type Selector<T> = {
-  get: GetMethod<T>;
-  observe: ObserveMethod<T>;
+  readonly key: symbol;
+  get(): GetValue<T>;
+  observe(observer: Observer<T>, passive?: boolean): Unobserver;
+  effect(effect: Effect): Uneffect;
 };
+
+export type SelectorCreator = <T>(getter: Getter<T>) => Selector<T>;
 
 export type State<T> = Selector<T> & {
-  set: SetMethod<T>;
+  set(value: SetValue<T>): void;
 };
+
+export type StateCreator = <T>(initialValue: InitialValue<T>) => State<T>;
+
+export type ProxyStateCreator = <T>(
+  getter: Getter<T>,
+  setter: Setter<T>,
+) => State<T>;
 
 export type Action<T> = {
-  dispatch: DispatchMethod<T>;
+  dispatch(value: T): void;
 };
 
-export type FactoryFunction<K, V> = (key: K) => V;
-export type FactoryProperties<K> = {keys: Selector<Set<K>>};
+export type ActionCreator = <T = void>(setter: Setter<T>) => Action<T>;
 
-export type Factory<K, V> = FactoryFunction<K, V> &
-  FactoryProperties<K> &
-  State<Map<K, V>>;
+export type ValueRange<V> = Set<V> | ((value: V) => boolean);
 
-export type SelectorFactory<K, V> = FactoryFunction<K, Selector<V>> &
-  FactoryProperties<K> &
-  Selector<Map<K, V>>;
+export type Box<V> = [V];
 
-export type StateFactory<K, V> = FactoryFunction<K, State<V>> &
-  FactoryProperties<K> &
-  State<Map<K, V>>;
+export type Factory<K, V> = (key: K) => V;
 
-export type ValueRange<V> = Iterable<V> | ((value: V) => boolean);
+export interface Transactor {
+  transact(operation: () => void): void;
+  finalize(operation: () => void): void;
+  isTransacting(): boolean;
+}
+
+export enum DependencyStatus {
+  Unchanged,
+  Changing,
+  Changed,
+  Stale,
+}
+
+export interface DependencyStore<T> {
+  status(item: T): DependencyStatus | undefined;
+  mark(item: T, status: DependencyStatus): void;
+  link(item: T, dependency: T): void;
+  unlink(item: T, dependency?: T): void;
+  observe(item: T, observer: Observer<DependencyStatus>): Unobserver;
+}
