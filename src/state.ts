@@ -40,7 +40,7 @@ export function bootstrapState({
 
     function set(value: SetValue<T>): void {
       unresolved.push(value);
-      dependencyStore.mark(selector.key, DependencyStatus.Stale);
+      dependencyStore.markStatus(selector.key, DependencyStatus.Stale);
     }
 
     return {

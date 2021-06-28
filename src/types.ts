@@ -63,16 +63,14 @@ export interface Transactor {
 }
 
 export enum DependencyStatus {
-  Unchanged,
-  Changing,
-  Changed,
   Stale,
+  Fresh,
 }
 
 export interface DependencyStore<T> {
-  status(item: T): DependencyStatus | undefined;
-  mark(item: T, status: DependencyStatus): void;
-  link(item: T, dependency: T): void;
-  unlink(item: T, dependency?: T): void;
-  observe(item: T, observer: Observer<DependencyStatus>): Unobserver;
+  getStatus(item: T): DependencyStatus;
+  markStatus(item: T, status: DependencyStatus): void;
+  addDependency(item: T, dependency: T): void;
+  removeDependencies(item: T): void;
+  observeStatus(item: T, observer: Observer<DependencyStatus>): Unobserver;
 }

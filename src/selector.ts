@@ -27,41 +27,57 @@ export function bootstrapSelector({
     const observers = new Set<Observer<T>>();
     const effects = new Set<Effect>();
     const cleanups = new Set<Cleanup>();
+    let dependencies = new Map<Selector<unknown>, unknown>();
     let current: Box<T> | undefined;
     let past: Box<T> | undefined;
+    let isComputing = false;
 
     const context: GetterContext = {
       get: dependency => {
-        dependencyStore.link(key, dependency.key);
+        const value = dependency.get();
 
-        return dependency.get();
+        dependencyStore.addDependency(key, dependency.key);
+        dependencies.set(dependency, value);
+
+        return value;
       },
     };
 
     function compute(): void {
-      dependencyStore.unlink(key); // Hmm, we only want to unlink *from* key to any, not bidirectionally
-      dependencyStore.mark(key, DependencyStatus.Changing);
-
+      dependencyStore.removeDependencies(key);
+      dependencies = new Map();
       past = current;
       current = box(getter(context));
 
-      dependencyStore.mark(
-        key,
-        past && unbox(past) === unbox(current)
-          ? DependencyStatus.Unchanged
-          : DependencyStatus.Changed,
-      );
+      // TODO use this for firing observers
+      const hasChanged = !past || unbox(past) !== unbox(current);
     }
 
-    function get(): T {
-      const status = dependencyStore.status(key) ?? DependencyStatus.Stale;
-
-      if (status === DependencyStatus.Changing) {
+    function prepare(): void {
+      if (isComputing) {
+        // TODO dependencyStore.findCycle(key);
         throw new Error('Circular dependencyStore detected');
       }
 
-      if (status === DependencyStatus.Stale) {
+      // Should be fine to do this and not unnecessarily compute a dependency as
+      // long as we do it in the order of the get(dependency) calls
+      const shouldCompute = !Array.from(dependencies).every(
+        ([dependency, value]) => Object.is(dependency.get(), value),
+      );
+
+      if (shouldCompute) {
+        isComputing = true;
         compute();
+        isComputing = false;
+      }
+    }
+
+    function get(): T {
+      const status = dependencyStore.getStatus(key);
+
+      if (status === DependencyStatus.Stale) {
+        prepare();
+        dependencyStore.markStatus(key, DependencyStatus.Fresh);
       }
 
       return unbox(current!);
@@ -71,7 +87,7 @@ export function bootstrapSelector({
       // if status is stale, changed, and has observers
     }
 
-    dependencyStore.observe(key, status => {
+    dependencyStore.observeStatus(key, status => {
       transactor.finalize(trigger);
     });
 
