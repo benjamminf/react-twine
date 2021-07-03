@@ -20,6 +20,10 @@ export function createTransactor(): Transactor {
     transact(() => finalOperations.add(operation));
   }
 
+  function unfinalize(operation: () => void): void {
+    finalOperations.delete(operation);
+  }
+
   function isTransacting(): boolean {
     return transacting;
   }
@@ -27,6 +31,7 @@ export function createTransactor(): Transactor {
   return {
     transact,
     finalize,
+    unfinalize,
     isTransacting,
   };
 }

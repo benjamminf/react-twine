@@ -27,30 +27,31 @@ export function bootstrapSelector({
     const observers = new Set<Observer<T>>();
     const effects = new Set<Effect>();
     const cleanups = new Set<Cleanup>();
-    let dependencies = new Map<Selector<unknown>, unknown>();
+    const dependencies = new Map<Selector<unknown>, unknown>();
     let current: Box<T> | undefined;
     let past: Box<T> | undefined;
+    let computeCounter = 0;
     let isComputing = false;
 
-    const context: GetterContext = {
-      get: dependency => {
-        const value = dependency.get();
-
-        dependencyStore.addDependency(key, dependency.key);
-        dependencies.set(dependency, value);
-
-        return value;
-      },
-    };
-
     function compute(): void {
+      const count = ++computeCounter;
+      const context: GetterContext = {
+        get: dependency => {
+          const value = dependency.get();
+
+          if (count === computeCounter) {
+            dependencyStore.addDependency(key, dependency.key);
+            dependencies.set(dependency, value);
+          }
+
+          return value;
+        },
+      };
+
       dependencyStore.removeDependencies(key);
-      dependencies = new Map();
+      dependencies.clear();
       past = current;
       current = box(getter(context));
-
-      // TODO use this for firing observers
-      const hasChanged = !past || unbox(past) !== unbox(current);
     }
 
     function prepare(): void {
@@ -59,8 +60,6 @@ export function bootstrapSelector({
         throw new Error('Circular dependencyStore detected');
       }
 
-      // Should be fine to do this and not unnecessarily compute a dependency as
-      // long as we do it in the order of the get(dependency) calls
       const shouldCompute = !Array.from(dependencies).every(
         ([dependency, value]) => Object.is(dependency.get(), value),
       );
@@ -83,17 +82,36 @@ export function bootstrapSelector({
       return unbox(current!);
     }
 
-    function trigger() {
-      // if status is stale, changed, and has observers
+    function triggerEffects() {
+      Array.from(effects).forEach(effect => {
+        const cleanup = effect();
+        if (cleanup) {
+          cleanups.add(cleanup);
+        }
+      });
     }
 
-    dependencyStore.observeStatus(key, status => {
-      transactor.finalize(trigger);
-    });
+    function triggerCleanups() {
+      const pastCleanups = Array.from(cleanups);
+      cleanups.clear();
+      pastCleanups.forEach(cleanup => cleanup());
+    }
+
+    function triggerObservers() {
+      const value = get();
+      const oldValue = past && unbox(past);
+      const hasChanged = !past || oldValue !== value;
+
+      if (hasChanged) {
+        Array.from(observers).forEach(observer => {
+          observer(value, oldValue);
+        });
+      }
+    }
 
     function observe(observer: Observer<T>): Unobserver {
       if (observers.size === 0) {
-        // Run effect
+        triggerEffects();
       }
 
       observers.add(observer);
@@ -103,7 +121,7 @@ export function bootstrapSelector({
           observers.delete(observer);
 
           if (observers.size === 0) {
-            // Run effect cleanup
+            triggerCleanups();
           }
         }
       };
@@ -114,6 +132,16 @@ export function bootstrapSelector({
 
       return () => effects.delete(effect);
     }
+
+    effects.add(() =>
+      dependencyStore.observeStatus(key, status => {
+        if (status === DependencyStatus.Stale) {
+          transactor.finalize(triggerObservers);
+        } else {
+          transactor.unfinalize(triggerObservers);
+        }
+      }),
+    );
 
     return {
       key,

@@ -59,6 +59,7 @@ export type Factory<K, V> = (key: K) => V;
 export interface Transactor {
   transact(operation: () => void): void;
   finalize(operation: () => void): void;
+  unfinalize(operation: () => void): void;
   isTransacting(): boolean;
 }
 

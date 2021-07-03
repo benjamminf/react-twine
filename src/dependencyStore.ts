@@ -27,25 +27,30 @@ function mapSetDelete<K, V>(mapSet: Map<K, Set<V>>, key: K, value?: V): void {
 }
 
 function crawlEdges<T>(
-  edgeMap: Map<T, Set<T>>,
+  edges: Map<T, Set<T>>,
   root: T,
-  callback: (item: T) => boolean | void,
+  callback: (item: T) => boolean,
 ): void {
-  const rootDependents = edgeMap.get(root);
+  const rootDependents = edges.get(root);
 
   if (!rootDependents) {
     return;
   }
 
   const pool = [...rootDependents];
+  const visited = new Set([root, ...pool]);
 
-  // TODO guard against cycles
   while (pool.length > 0) {
     const item = pool.pop()!;
-    const survive = callback(item) ?? true;
 
-    if (survive) {
-      const dependents = edgeMap.get(item);
+    if (visited.has(item)) {
+      throw new Error('Cycle detected');
+    }
+
+    visited.add(item);
+
+    if (callback(item)) {
+      const dependents = edges.get(item);
       if (dependents) {
         pool.push(...dependents);
       }
@@ -90,6 +95,8 @@ export function createDependencyStore<T>(): DependencyStore<T> {
 
       setStatus(current, DependencyStatus.Stale);
       triggerObservers(current);
+
+      return true;
     });
   }
 
