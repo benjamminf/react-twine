@@ -57,7 +57,6 @@ export function bootstrapSelector({
         },
       };
 
-      dependencyStore.removeDependencies(key);
       dependencies.clear();
       past = current;
       current = box(getter(context));
@@ -69,9 +68,11 @@ export function bootstrapSelector({
         throw new Error('Circular dependencyStore detected');
       }
 
-      const shouldCompute = !Array.from(dependencies).every(
-        ([dependency, value]) => equals(dependency.get(), value),
-      );
+      const shouldCompute =
+        dependencies.size === 0 ||
+        !Array.from(dependencies).every(([dependency, value]) =>
+          equals(dependency.get(), value),
+        );
 
       if (shouldCompute) {
         isComputing = true;
@@ -86,6 +87,11 @@ export function bootstrapSelector({
       if (status === DependencyStatus.Stale) {
         prepare();
         dependencyStore.markStatus(key, DependencyStatus.Fresh);
+
+        const unobserve = dependencyStore.observeStatus(key, () => {
+          dependencyStore.removeDependencies(key);
+          unobserve();
+        });
       }
 
       return unbox(current!);
@@ -145,12 +151,13 @@ export function bootstrapSelector({
     function statusObserver(status: DependencyStatus): void {
       if (status === DependencyStatus.Stale) {
         transactor.finalize(triggerObservers);
-      } else {
-        transactor.unfinalize(triggerObservers);
       }
     }
 
-    effects.add(() => dependencyStore.observeStatus(key, statusObserver));
+    effects.add(() => {
+      get();
+      return dependencyStore.observeStatus(key, statusObserver);
+    });
 
     return {
       key,

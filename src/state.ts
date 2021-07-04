@@ -3,6 +3,7 @@ import { resolveValue } from './value';
 import { Box, box, unbox } from './box';
 import { isSelector, SelectorCreator, SelectorOptions } from './selector';
 import { DependencyStore, DependencyStatus } from './dependencyStore';
+import { Transactor } from './transactor';
 
 export type StateCreator = <T>(
   initialValue: InitialValue<T>,
@@ -11,9 +12,11 @@ export type StateCreator = <T>(
 
 export function bootstrapState({
   dependencyStore,
+  transactor,
   createSelector,
 }: {
   dependencyStore: DependencyStore<symbol>;
+  transactor: Transactor;
   createSelector: SelectorCreator;
 }): StateCreator {
   return function createState<T>(
@@ -38,9 +41,13 @@ export function bootstrapState({
       return unbox(current);
     }, options);
 
+    function markStale() {
+      dependencyStore.markStatus(selector.key, DependencyStatus.Stale);
+    }
+
     function set(value: SetValue<T>): void {
       unresolved.push(value);
-      dependencyStore.markStatus(selector.key, DependencyStatus.Stale);
+      transactor.transact(markStale);
     }
 
     return {

@@ -19,7 +19,11 @@ export function bootstrap(): {
   const transactor = createTransactor();
   const createAction = bootstrapAction({ transactor });
   const createSelector = bootstrapSelector({ dependencyStore, transactor });
-  const createState = bootstrapState({ dependencyStore, createSelector });
+  const createState = bootstrapState({
+    dependencyStore,
+    transactor,
+    createSelector,
+  });
   const createProxyState = bootstrapProxyState({
     createAction,
     createSelector,

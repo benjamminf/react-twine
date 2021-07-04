@@ -1,8 +1,8 @@
 import { Observer, Unobserver } from './types';
 
 export enum DependencyStatus {
-  Stale,
-  Fresh,
+  Stale = 'Stale',
+  Fresh = 'Fresh',
 }
 
 export interface DependencyStore<T> {
@@ -121,13 +121,13 @@ function crawlEdges<T>(
   }
 
   const pool = [...rootDependents];
-  const visited = new Set([root, ...pool]);
+  const visited = new Set([root]);
 
   while (pool.length > 0) {
     const item = pool.pop()!;
 
     if (visited.has(item)) {
-      throw new Error('Cycle detected');
+      continue;
     }
 
     visited.add(item);
