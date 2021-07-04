@@ -133,15 +133,15 @@ export function bootstrapSelector({
       return () => effects.delete(effect);
     }
 
-    effects.add(() =>
-      dependencyStore.observeStatus(key, status => {
-        if (status === DependencyStatus.Stale) {
-          transactor.finalize(triggerObservers);
-        } else {
-          transactor.unfinalize(triggerObservers);
-        }
-      }),
-    );
+    function statusObserver(status: DependencyStatus): void {
+      if (status === DependencyStatus.Stale) {
+        transactor.finalize(triggerObservers);
+      } else {
+        transactor.unfinalize(triggerObservers);
+      }
+    }
+
+    effects.add(() => dependencyStore.observeStatus(key, statusObserver));
 
     return {
       key,
