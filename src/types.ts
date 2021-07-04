@@ -1,7 +1,5 @@
 export type InitialValue<T> = T | (() => T);
-
 export type GetValue<T> = T;
-
 export type SetValue<T> = T | ((value: T) => T);
 
 export type Observer<T> = (value: T, oldValue?: T) => void;
@@ -15,13 +13,12 @@ export type GetterContext = {
   get<V>(selector: Selector<V>): GetValue<V>;
 };
 
-export type Getter<T> = (context: GetterContext) => GetValue<T>;
-
 export type SetterContext = GetterContext & {
   set<V>(state: State<V>, value: SetValue<V>): void;
   dispatch<V>(action: Action<V>, value: V): void;
 };
 
+export type Getter<T> = (context: GetterContext) => GetValue<T>;
 export type Setter<T> = (context: SetterContext, value: T) => void;
 
 export type Selector<T> = {
@@ -31,47 +28,10 @@ export type Selector<T> = {
   effect(effect: Effect): Uneffect;
 };
 
-export type SelectorCreator = <T>(getter: Getter<T>) => Selector<T>;
-
-export type State<T> = Selector<T> & {
-  set(value: SetValue<T>): void;
-};
-
-export type StateCreator = <T>(initialValue: InitialValue<T>) => State<T>;
-
-export type ProxyStateCreator = <T>(
-  getter: Getter<T>,
-  setter: Setter<T>,
-) => State<T>;
-
 export type Action<T> = {
   dispatch(value: T): void;
 };
 
-export type ActionCreator = <T = void>(setter: Setter<T>) => Action<T>;
-
-export type ValueRange<V> = Set<V> | ((value: V) => boolean);
-
-export type Box<V> = [V];
-
-export type Factory<K, V> = (key: K) => V;
-
-export interface Transactor {
-  transact(operation: () => void): void;
-  finalize(operation: () => void): void;
-  unfinalize(operation: () => void): void;
-  isTransacting(): boolean;
-}
-
-export enum DependencyStatus {
-  Stale,
-  Fresh,
-}
-
-export interface DependencyStore<T> {
-  getStatus(item: T): DependencyStatus;
-  markStatus(item: T, status: DependencyStatus): void;
-  addDependency(item: T, dependency: T): void;
-  removeDependencies(item: T): void;
-  observeStatus(item: T, observer: Observer<DependencyStatus>): Unobserver;
-}
+export type State<T> = Selector<T> & {
+  set(value: SetValue<T>): void;
+};

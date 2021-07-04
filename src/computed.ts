@@ -1,13 +1,23 @@
-import { GetterContext, Selector, SelectorCreator } from './types';
+import { SelectorCreator } from './selector';
+import { GetterContext, Selector } from './types';
+
+export type Compute<T, A extends unknown[]> = (
+  context: GetterContext,
+  ...args: A
+) => T;
+export type Computed<T, A extends unknown[]> = (...args: A) => Selector<T>;
+export type ComputedCreator = <T, A extends unknown[]>(
+  compute: Compute<T, A>,
+) => Computed<T, A>;
 
 export function bootstrapComputed({
   createSelector,
 }: {
   createSelector: SelectorCreator;
-}) {
+}): ComputedCreator {
   return function createComputed<T, A extends unknown[]>(
-    compute: (context: GetterContext, ...args: A) => T,
-  ): (...args: A) => Selector<T> {
+    compute: Compute<T, A>,
+  ): Computed<T, A> {
     const selectors = new MultiKeyMap<A, Selector<T>>();
 
     return (...args) => {
@@ -113,7 +123,7 @@ class MultiKeyMap<K extends unknown[], V> {
     const current = path[path.length - 1];
     current.value = undefined;
 
-    for (let i = path.length - 1; i > 0; i--) {
+    for (let i = path.length - 1; i >= 0; i--) {
       const k = key[i];
       const current = path[i];
       const previous = path[i - 1];

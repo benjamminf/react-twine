@@ -1,4 +1,9 @@
-import { Transactor } from './types';
+export interface Transactor {
+  transact(operation: () => void): void;
+  finalize(operation: () => void): void;
+  unfinalize(operation: () => void): void;
+  isTransacting(): boolean;
+}
 
 export function createTransactor(): Transactor {
   let transacting = false;

@@ -1,10 +1,7 @@
-import {
-  Action,
-  ActionCreator,
-  Setter,
-  SetterContext,
-  Transactor,
-} from './types';
+import { Transactor } from './transactor';
+import { Action, Setter, SetterContext } from './types';
+
+export type ActionCreator = <T = void>(setter: Setter<T>) => Action<T>;
 
 export function bootstrapAction({
   transactor,

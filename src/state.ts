@@ -1,16 +1,10 @@
-import {
-  DependencyStore,
-  DependencyStatus,
-  InitialValue,
-  SetValue,
-  State,
-  StateCreator,
-  Box,
-  SelectorCreator,
-} from './types';
+import { InitialValue, SetValue, State } from './types';
 import { resolveValue } from './value';
-import { box, unbox } from './box';
-import { isSelector } from './selector';
+import { Box, box, unbox } from './box';
+import { isSelector, SelectorCreator } from './selector';
+import { DependencyStore, DependencyStatus } from './dependencyStore';
+
+export type StateCreator = <T>(initialValue: InitialValue<T>) => State<T>;
 
 export function bootstrapState({
   dependencyStore,

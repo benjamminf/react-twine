@@ -1,61 +1,16 @@
-import {
-  DependencyStatus,
-  DependencyStore,
-  Observer,
-  Unobserver,
-} from './types';
+import { Observer, Unobserver } from './types';
 
-function mapSetAdd<K, V>(mapSet: Map<K, Set<V>>, key: K, value: V): void {
-  let set = mapSet.get(key);
-  if (!set) {
-    set = new Set<V>();
-    mapSet.set(key, set);
-  }
-  set.add(value);
+export enum DependencyStatus {
+  Stale,
+  Fresh,
 }
 
-function mapSetDelete<K, V>(mapSet: Map<K, Set<V>>, key: K, value?: V): void {
-  const set = mapSet.get(key);
-  if (set) {
-    if (value !== undefined) {
-      set.delete(value);
-    }
-    if (value === undefined || set.size === 0) {
-      mapSet.delete(key);
-    }
-  }
-}
-
-function crawlEdges<T>(
-  edges: Map<T, Set<T>>,
-  root: T,
-  callback: (item: T) => boolean,
-): void {
-  const rootDependents = edges.get(root);
-
-  if (!rootDependents) {
-    return;
-  }
-
-  const pool = [...rootDependents];
-  const visited = new Set([root, ...pool]);
-
-  while (pool.length > 0) {
-    const item = pool.pop()!;
-
-    if (visited.has(item)) {
-      throw new Error('Cycle detected');
-    }
-
-    visited.add(item);
-
-    if (callback(item)) {
-      const dependents = edges.get(item);
-      if (dependents) {
-        pool.push(...dependents);
-      }
-    }
-  }
+export interface DependencyStore<T> {
+  getStatus(item: T): DependencyStatus;
+  markStatus(item: T, status: DependencyStatus): void;
+  addDependency(item: T, dependency: T): void;
+  removeDependencies(item: T): void;
+  observeStatus(item: T, observer: Observer<DependencyStatus>): Unobserver;
 }
 
 export function createDependencyStore<T>(): DependencyStore<T> {
@@ -131,4 +86,57 @@ export function createDependencyStore<T>(): DependencyStore<T> {
     addDependency,
     removeDependencies,
   };
+}
+
+function mapSetAdd<K, V>(mapSet: Map<K, Set<V>>, key: K, value: V): void {
+  let set = mapSet.get(key);
+  if (!set) {
+    set = new Set<V>();
+    mapSet.set(key, set);
+  }
+  set.add(value);
+}
+
+function mapSetDelete<K, V>(mapSet: Map<K, Set<V>>, key: K, value?: V): void {
+  const set = mapSet.get(key);
+  if (set) {
+    if (value !== undefined) {
+      set.delete(value);
+    }
+    if (value === undefined || set.size === 0) {
+      mapSet.delete(key);
+    }
+  }
+}
+
+function crawlEdges<T>(
+  edges: Map<T, Set<T>>,
+  root: T,
+  callback: (item: T) => boolean,
+): void {
+  const rootDependents = edges.get(root);
+
+  if (!rootDependents) {
+    return;
+  }
+
+  const pool = [...rootDependents];
+  const visited = new Set([root, ...pool]);
+
+  while (pool.length > 0) {
+    const item = pool.pop()!;
+
+    if (visited.has(item)) {
+      throw new Error('Cycle detected');
+    }
+
+    visited.add(item);
+
+    if (callback(item)) {
+      const dependents = edges.get(item);
+      if (dependents) {
+        pool.push(...dependents);
+      }
+    }
+  }
 }

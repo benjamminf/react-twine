@@ -1,4 +1,6 @@
-import { InitialValue, SetValue, ValueRange } from './types';
+import { InitialValue, SetValue } from './types';
+
+export type ValueRange<V> = Set<V> | ((value: V) => boolean);
 
 export function resolveValue<V>(value: InitialValue<V>): V;
 export function resolveValue<V>(value: SetValue<V>, get: () => V): V;

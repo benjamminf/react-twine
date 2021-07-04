@@ -1,13 +1,12 @@
 import { resolveValue } from './value';
-import {
-  ActionCreator,
-  Getter,
-  ProxyStateCreator,
-  SelectorCreator,
-  Setter,
-  SetValue,
-  State,
-} from './types';
+import { Getter, Setter, SetValue, State } from './types';
+import { ActionCreator } from './action';
+import { SelectorCreator } from './selector';
+
+export type ProxyStateCreator = <T>(
+  getter: Getter<T>,
+  setter: Setter<T>,
+) => State<T>;
 
 export function bootstrapProxyState({
   createAction,

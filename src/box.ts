@@ -1,4 +1,4 @@
-import { Box } from './types';
+export type Box<V> = [V];
 
 export function box<V>(value: V): Box<V> {
   return [value];

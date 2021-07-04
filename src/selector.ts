@@ -1,19 +1,18 @@
-import { box, unbox } from './box';
+import { Box, box, unbox } from './box';
+import { DependencyStore, DependencyStatus } from './dependencyStore';
+import { Transactor } from './transactor';
 import {
-  Box,
   Cleanup,
-  DependencyStatus,
-  DependencyStore,
   Effect,
   Getter,
   GetterContext,
   Observer,
   Selector,
-  SelectorCreator,
-  Transactor,
   Uneffect,
   Unobserver,
 } from './types';
+
+export type SelectorCreator = <T>(getter: Getter<T>) => Selector<T>;
 
 export function bootstrapSelector({
   dependencyStore,
