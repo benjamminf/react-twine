@@ -1,10 +1,13 @@
 import { InitialValue, SetValue, State } from './types';
 import { resolveValue } from './value';
 import { Box, box, unbox } from './box';
-import { isSelector, SelectorCreator } from './selector';
+import { isSelector, SelectorCreator, SelectorOptions } from './selector';
 import { DependencyStore, DependencyStatus } from './dependencyStore';
 
-export type StateCreator = <T>(initialValue: InitialValue<T>) => State<T>;
+export type StateCreator = <T>(
+  initialValue: InitialValue<T>,
+  options?: SelectorOptions,
+) => State<T>;
 
 export function bootstrapState({
   dependencyStore,
@@ -13,7 +16,10 @@ export function bootstrapState({
   dependencyStore: DependencyStore<symbol>;
   createSelector: SelectorCreator;
 }): StateCreator {
-  return function createState<T>(initialValue: InitialValue<T>): State<T> {
+  return function createState<T>(
+    initialValue: InitialValue<T>,
+    options?: SelectorOptions,
+  ): State<T> {
     let unresolved: Array<SetValue<T>> = [];
     let current: Box<T> | undefined;
 
@@ -30,7 +36,7 @@ export function bootstrapState({
       unresolved = [];
 
       return unbox(current);
-    });
+    }, options);
 
     function set(value: SetValue<T>): void {
       unresolved.push(value);

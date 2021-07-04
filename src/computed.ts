@@ -1,13 +1,25 @@
-import { SelectorCreator } from './selector';
+import { SelectorCreator, SelectorOptions } from './selector';
 import { GetterContext, Selector } from './types';
+import { Values } from './value';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type HashFunction<V> = (value: V) => any;
+
+export type ComputedOptions<A extends unknown[]> = SelectorOptions &
+  Partial<{
+    hash: HashFunction<Values<A>>;
+  }>;
 
 export type Compute<T, A extends unknown[]> = (
   context: GetterContext,
   ...args: A
 ) => T;
+
 export type Computed<T, A extends unknown[]> = (...args: A) => Selector<T>;
+
 export type ComputedCreator = <T, A extends unknown[]>(
   compute: Compute<T, A>,
+  options?: ComputedOptions<A>,
 ) => Computed<T, A>;
 
 export function bootstrapComputed({
@@ -17,8 +29,9 @@ export function bootstrapComputed({
 }): ComputedCreator {
   return function createComputed<T, A extends unknown[]>(
     compute: Compute<T, A>,
+    { hash, ...selectorOptions }: ComputedOptions<A> = {},
   ): Computed<T, A> {
-    const selectors = new MultiKeyMap<A, Selector<T>>();
+    const selectors = new MultiKeyMap<A, Selector<T>>(hash);
 
     return (...args) => {
       const existingSelector = selectors.get(args);
@@ -27,7 +40,10 @@ export function bootstrapComputed({
         return existingSelector;
       }
 
-      const selector = createSelector<T>(context => compute(context, ...args));
+      const selector = createSelector<T>(
+        context => compute(context, ...args),
+        selectorOptions,
+      );
 
       selector.effect(() => {
         if (selectors.has(args)) {
@@ -52,11 +68,14 @@ type Node<K, V> = {
 class MultiKeyMap<K extends unknown[], V> {
   private root: Node<unknown, V> = {};
 
+  constructor(private hash: HashFunction<Values<K>> = v => v) {}
+
   has(key: K): boolean {
     let current = this.root;
 
     for (const k of key) {
-      const next = current.children?.get(k);
+      const hashed = this.hash(k as Values<K>);
+      const next = current.children?.get(hashed);
 
       if (!next) {
         return false;
@@ -72,7 +91,8 @@ class MultiKeyMap<K extends unknown[], V> {
     let current = this.root;
 
     for (const k of key) {
-      const next = current.children?.get(k);
+      const hashed = this.hash(k as Values<K>);
+      const next = current.children?.get(hashed);
 
       if (!next) {
         return undefined;
@@ -88,12 +108,13 @@ class MultiKeyMap<K extends unknown[], V> {
     let current = this.root;
 
     for (const k of key) {
-      let next = current.children?.get(k);
+      const hashed = this.hash(k as Values<K>);
+      let next = current.children?.get(hashed);
 
       if (!next) {
         next = {};
         current.children ||= new Map();
-        current.children.set(k, next);
+        current.children.set(hashed, next);
       }
 
       current = next;
@@ -106,11 +127,12 @@ class MultiKeyMap<K extends unknown[], V> {
 
   delete(key: K): boolean {
     const path = [this.root];
+    const hashes = key.map(k => this.hash(k as Values<K>));
 
-    for (let i = 0; i < key.length; i++) {
-      const k = key[i];
+    for (let i = 0; i < hashes.length; i++) {
+      const hashed = hashes[i];
       const current = path[i];
-      const next = current.children?.get(k);
+      const next = current.children?.get(hashed);
 
       if (!next) {
         return false;
@@ -124,12 +146,12 @@ class MultiKeyMap<K extends unknown[], V> {
     current.value = undefined;
 
     for (let i = path.length - 1; i >= 0; i--) {
-      const k = key[i];
+      const hashed = hashes[i];
       const current = path[i];
       const previous = path[i - 1];
 
       if (previous?.children && !current.children?.size) {
-        previous.children.delete(k);
+        previous.children.delete(hashed);
 
         if (!previous.children.size) {
           previous.children = undefined;

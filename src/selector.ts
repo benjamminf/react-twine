@@ -12,7 +12,14 @@ import {
   Unobserver,
 } from './types';
 
-export type SelectorCreator = <T>(getter: Getter<T>) => Selector<T>;
+export type SelectorOptions = Partial<{
+  equals: <T>(a: T, b: T) => boolean;
+}>;
+
+export type SelectorCreator = <T>(
+  getter: Getter<T>,
+  options?: SelectorOptions,
+) => Selector<T>;
 
 export function bootstrapSelector({
   dependencyStore,
@@ -21,7 +28,10 @@ export function bootstrapSelector({
   dependencyStore: DependencyStore<symbol>;
   transactor: Transactor;
 }): SelectorCreator {
-  return function createSelector<T>(getter: Getter<T>): Selector<T> {
+  return function createSelector<T>(
+    getter: Getter<T>,
+    { equals = Object.is }: SelectorOptions = {},
+  ): Selector<T> {
     const key = Symbol();
     const observers = new Set<Observer<T>>();
     const effects = new Set<Effect>();
@@ -60,7 +70,7 @@ export function bootstrapSelector({
       }
 
       const shouldCompute = !Array.from(dependencies).every(
-        ([dependency, value]) => Object.is(dependency.get(), value),
+        ([dependency, value]) => equals(dependency.get(), value),
       );
 
       if (shouldCompute) {
@@ -99,7 +109,7 @@ export function bootstrapSelector({
     function triggerObservers() {
       const value = get();
       const oldValue = past && unbox(past);
-      const hasChanged = !past || oldValue !== value;
+      const hasChanged = !past || !equals(oldValue, value);
 
       if (hasChanged) {
         Array.from(observers).forEach(observer => {
