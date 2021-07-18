@@ -7,7 +7,7 @@ import { Transactor } from './transactor';
 
 export type StateCreator = <T>(
   initialValue: InitialValue<T>,
-  options?: SelectorOptions,
+  options?: SelectorOptions<T>,
 ) => State<T>;
 
 export function bootstrapState({
@@ -21,7 +21,7 @@ export function bootstrapState({
 }): StateCreator {
   return function createState<T>(
     initialValue: InitialValue<T>,
-    options?: SelectorOptions,
+    options?: SelectorOptions<T>,
   ): State<T> {
     let unresolved: Array<SetValue<T>> = [];
     let current: Box<T> | undefined;

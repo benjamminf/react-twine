@@ -9,15 +9,16 @@ export interface DependencyStore<T> {
   getStatus(item: T): DependencyStatus;
   markStatus(item: T, status: DependencyStatus): void;
   addDependency(item: T, dependency: T): void;
+  removeDependency(item: T, dependency: T): void;
   removeDependencies(item: T): void;
   observeStatus(item: T, observer: Observer<DependencyStatus>): Unobserver;
 }
 
 export function createDependencyStore<T>(): DependencyStore<T> {
-  const statuses = new Map<T, DependencyStatus>();
-  const edges = new Map<T, Set<T>>();
-  const inverseEdges = new Map<T, Set<T>>();
-  const observers = new Map<T, Set<Observer<DependencyStatus>>>();
+  const statuses = new Map<T, DependencyStatus>(); // TODO weakmap
+  const edges = new Map<T, Set<T>>(); // TODO weakmap
+  const inverseEdges = new Map<T, Set<T>>(); // TODO weakmap
+  const observers = new Map<T, Set<Observer<DependencyStatus>>>(); // TODO weakmap
 
   function getStatus(item: T): DependencyStatus {
     return statuses.get(item) ?? DependencyStatus.Stale;
@@ -74,6 +75,11 @@ export function createDependencyStore<T>(): DependencyStore<T> {
     mapSetAdd(inverseEdges, dependency, item);
   }
 
+  function removeDependency(item: T, dependency: T): void {
+    mapSetDelete(edges, item, dependency);
+    mapSetDelete(inverseEdges, dependency, item);
+  }
+
   function removeDependencies(item: T): void {
     edges.get(item)?.forEach(dep => mapSetDelete(inverseEdges, dep, item));
     mapSetDelete(edges, item);
@@ -84,7 +90,8 @@ export function createDependencyStore<T>(): DependencyStore<T> {
     markStatus,
     observeStatus,
     addDependency,
-    removeDependencies,
+    removeDependency,
+    removeDependencies, // TODO is this needed?
   };
 }
 

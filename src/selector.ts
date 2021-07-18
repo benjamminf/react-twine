@@ -4,21 +4,23 @@ import { Transactor } from './transactor';
 import {
   Cleanup,
   Effect,
+  EffectOptions,
   Getter,
-  GetterContext,
   Observer,
+  ObserverOptions,
   Selector,
   Uneffect,
   Unobserver,
 } from './types';
 
-export type SelectorOptions = Partial<{
-  equals: <T>(a: T, b: T) => boolean;
+export type SelectorOptions<T> = Partial<{
+  equals: (a: T, b: T) => boolean;
+  cleanup: (value: T) => void;
 }>;
 
 export type SelectorCreator = <T>(
   getter: Getter<T>,
-  options?: SelectorOptions,
+  options?: SelectorOptions<T>,
 ) => Selector<T>;
 
 export function bootstrapSelector({
@@ -30,36 +32,62 @@ export function bootstrapSelector({
 }): SelectorCreator {
   return function createSelector<T>(
     getter: Getter<T>,
-    { equals = Object.is }: SelectorOptions = {},
+    { equals = Object.is, cleanup }: SelectorOptions<T> = {},
   ): Selector<T> {
     const key = Symbol();
     const observers = new Set<Observer<T>>();
+    const unobservers = new Set<Unobserver>();
     const effects = new Set<Effect>();
     const cleanups = new Set<Cleanup>();
-    const dependencies = new Map<Selector<unknown>, unknown>();
+    const dependencies = new Map<symbol, Unobserver>();
     let current: Box<T> | undefined;
     let past: Box<T> | undefined;
     let computeCounter = 0;
+    let shouldCompute = true;
     let isComputing = false;
+
+    function markComputable() {
+      shouldCompute = true;
+    }
+
+    function cleanupDependencies(
+      dependencyKeys = new Set(dependencies.keys()),
+    ): void {
+      dependencyKeys.forEach(dependencyKey => {
+        dependencies.get(dependencyKey)?.();
+        dependencies.delete(dependencyKey);
+        dependencyStore.removeDependency(key, dependencyKey);
+      });
+    }
 
     function compute(): void {
       const count = ++computeCounter;
-      const context: GetterContext = {
+      const pastDependencies = new Set(dependencies.keys());
+      const value = getter({
         get: dependency => {
-          const value = dependency.get();
+          dependencyStore.addDependency(key, dependency.key);
+          pastDependencies.delete(dependency.key);
 
-          if (count === computeCounter) {
-            dependencyStore.addDependency(key, dependency.key);
-            dependencies.set(dependency, value);
+          if (
+            observers.size > 0 &&
+            count === computeCounter &&
+            !dependencies.has(dependency.key)
+          ) {
+            dependencies.set(
+              dependency.key,
+              dependency.observe(markComputable),
+            );
           }
 
-          return value;
+          return dependency.get();
         },
-      };
+      });
 
-      dependencies.clear();
+      // TODO only keep past/current values when observed
       past = current;
-      current = box(getter(context));
+      current = box(value);
+
+      cleanupDependencies(pastDependencies);
     }
 
     function prepare(): void {
@@ -68,16 +96,11 @@ export function bootstrapSelector({
         throw new Error('Circular dependencyStore detected');
       }
 
-      const shouldCompute =
-        dependencies.size === 0 ||
-        !Array.from(dependencies).every(([dependency, value]) =>
-          equals(dependency.get(), value),
-        );
-
       if (shouldCompute) {
         isComputing = true;
         compute();
         isComputing = false;
+        shouldCompute = observers.size === 0 || dependencies.size === 0;
       }
     }
 
@@ -87,11 +110,6 @@ export function bootstrapSelector({
       if (status === DependencyStatus.Stale) {
         prepare();
         dependencyStore.markStatus(key, DependencyStatus.Fresh);
-
-        const unobserve = dependencyStore.observeStatus(key, () => {
-          dependencyStore.removeDependencies(key);
-          unobserve();
-        });
       }
 
       return unbox(current!);
@@ -115,37 +133,17 @@ export function bootstrapSelector({
     function triggerObservers() {
       const value = get();
       const oldValue = past && unbox(past);
-      const hasChanged = !past || !equals(oldValue, value);
+      const hasChanged = !past || !equals(oldValue as T, value);
 
       if (hasChanged) {
         Array.from(observers).forEach(observer => {
           observer(value, oldValue);
         });
+
+        const pastUnobservers = Array.from(unobservers);
+        unobservers.clear();
+        pastUnobservers.forEach(unobserver => unobserver());
       }
-    }
-
-    function observe(observer: Observer<T>): Unobserver {
-      if (observers.size === 0) {
-        triggerEffects();
-      }
-
-      observers.add(observer);
-
-      return () => {
-        if (observers.has(observer)) {
-          observers.delete(observer);
-
-          if (observers.size === 0) {
-            triggerCleanups();
-          }
-        }
-      };
-    }
-
-    function effect(effect: Effect): Uneffect {
-      effects.add(effect);
-
-      return () => effects.delete(effect);
     }
 
     function statusObserver(status: DependencyStatus): void {
@@ -156,8 +154,55 @@ export function bootstrapSelector({
 
     effects.add(() => {
       get();
-      return dependencyStore.observeStatus(key, statusObserver);
+      const unobserveStatus = dependencyStore.observeStatus(
+        key,
+        statusObserver,
+      );
+      return () => {
+        unobserveStatus();
+        cleanupDependencies();
+      };
     });
+
+    function observe(
+      observer: Observer<T>,
+      {
+        once = false,
+        immediate = false,
+        passive = false,
+      }: ObserverOptions = {},
+    ): Unobserver {
+      if (observers.size === 0) {
+        triggerEffects();
+      }
+
+      observers.add(observer);
+
+      const unobserver = () => {
+        if (observers.has(observer)) {
+          observers.delete(observer);
+          if (observers.size === 0) {
+            triggerCleanups();
+          }
+        }
+      };
+
+      if (once) {
+        unobservers.add(unobserver);
+      }
+
+      return unobserver;
+    }
+
+    // effects, when should they be called?
+    // the problem with the current approach is that it only triggers when the
+    // selector is directly observed. It doesn't trigger if it's a descendent
+    // from the selector that becomes observed.
+    function effect(effect: Effect, options: EffectOptions = {}): Uneffect {
+      effects.add(effect);
+
+      return () => effects.delete(effect);
+    }
 
     return {
       key,

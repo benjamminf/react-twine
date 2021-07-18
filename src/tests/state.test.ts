@@ -22,6 +22,7 @@ describe('createState()', () => {
     });
     createState = bootstrapState({
       dependencyStore,
+      transactor,
       createSelector,
     });
   });

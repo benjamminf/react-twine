@@ -4,10 +4,19 @@ export type SetValue<T> = T | ((value: T) => T);
 
 export type Observer<T> = (value: T, oldValue?: T) => void;
 export type Unobserver = () => void;
+export type ObserverOptions = Partial<{
+  once: boolean;
+  immediate: boolean;
+  passive: boolean;
+}>;
 
 export type Cleanup = () => void;
 export type Effect = () => Cleanup | void;
 export type Uneffect = () => void;
+export type EffectOptions = Partial<{
+  once: boolean;
+  immediate: boolean;
+}>;
 
 export type GetterContext = {
   get<V>(selector: Selector<V>): GetValue<V>;
@@ -24,8 +33,8 @@ export type Setter<T> = (context: SetterContext, value: T) => void;
 export type Selector<T> = {
   readonly key: symbol;
   get(): GetValue<T>;
-  observe(observer: Observer<T>, passive?: boolean): Unobserver;
-  effect(effect: Effect): Uneffect;
+  observe(observer: Observer<T>, options?: ObserverOptions): Unobserver;
+  effect(effect: Effect, options?: EffectOptions): Uneffect;
 };
 
 export type Action<T> = {
